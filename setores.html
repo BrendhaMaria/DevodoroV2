@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="layout.css">
+
+<style>
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:20px;
+}
+
+.sector{
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+.icon{
+width:40px;
+height:40px;
+background:#2b0000;
+border-radius:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+<nav>
+<a href="dashboard.html">Dashboard</a>
+<a href="tarefas.html">Tarefas</a>
+<a href="equipe.html">Equipe</a>
+<a class="active">Setores</a>
+<a href="configuracoes.html">Configurações</a>
+</nav>
+</aside>
+
+<main class="main">
+
+<header>
+
+<h1>Setores</h1>
+<button class="btn">+ Novo Setor</button>
+
+</header>
+
+<div class="grid">
+
+<div class="card sector">
+<div class="icon"></div>
+<div>
+<h3>buceta</h3>
+<p>1 tarefas</p>
+</div>
+</div>
+
+<div class="card sector">
+<div class="icon"></div>
+<div>
+<h3>cu</h3>
+<p>1 tarefas</p>
+</div>
+</div>
+
+</div>
+
+</main>
+
+</div>
+</body>
+</html>

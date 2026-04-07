@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<title>Login</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:#0a0a0a;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+}
+
+/* BOX */
+
+.login-box{
+width:420px;
+background:#111;
+padding:40px;
+border-radius:20px;
+box-shadow:0 0 60px rgba(255,0,150,0.25);
+position:relative;
+}
+
+/* TITLES */
+
+h2{
+text-align:center;
+margin-bottom:5px;
+}
+
+.subtitle{
+text-align:center;
+color:#aaa;
+margin-bottom:25px;
+}
+
+/* TABS */
+
+.tabs{
+position:relative;
+display:flex;
+background:#1a1a1a;
+border-radius:10px;
+overflow:hidden;
+margin-bottom:25px;
+}
+
+.slider{
+position:absolute;
+width:50%;
+height:100%;
+background:linear-gradient(90deg,#ff2a7f,#ff2a7f);
+border-radius:10px;
+transition:0.35s;
+left:0;
+}
+
+.tabs button{
+flex:1;
+padding:10px;
+background:none;
+border:none;
+color:#aaa;
+cursor:pointer;
+z-index:2;
+font-size:14px;
+}
+
+.tabs button.active{
+color:white;
+}
+
+/* FORM CONTAINER */
+
+.forms{
+position:relative;
+min-height:120px;
+}
+
+/* FORM ANIMATION */
+
+.form{
+opacity:0;
+transform:translateY(10px);
+pointer-events:none;
+transition:opacity 0.35s ease, transform 0.35s ease;
+position:absolute;
+width:100%;
+}
+
+.form.active{
+opacity:1;
+transform:translateY(0);
+pointer-events:auto;
+position:relative;
+}
+
+/* INPUTS */
+
+input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border-radius:10px;
+border:none;
+background:#1a1a1a;
+color:white;
+}
+
+/* BUTTON */
+
+button.login{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:linear-gradient(90deg,#ff2a7f,#00c6ff);
+color:white;
+cursor:pointer;
+}
+
+/* EXTRA LINKS */
+
+.extra{
+text-align:center;
+margin-top:15px;
+font-size:14px;
+color:#aaa;
+}
+
+.extra span{
+color:#ff2a7f;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+<h2>Acessar Plataforma</h2>
+<div class="subtitle">Entre com suas credenciais</div>
+
+<div class="tabs">
+
+<div class="slider" id="slider"></div>
+
+<button id="empresaBtn" class="active">Empresa</button>
+<button id="funcBtn">Funcionário</button>
+
+</div>
+
+<div class="forms">
+
+<!-- LOGIN EMPRESA -->
+
+<form class="form active" id="empresaForm">
+
+<input type="email" placeholder="Digite seu melhor email">
+<input type="password" placeholder="Crie uma senha">
+
+<button class="login">Entrar</button>
+
+</form>
+
+<!-- LOGIN FUNCIONARIO -->
+
+<form class="form" id="funcForm">
+
+<input type="email" placeholder="funcionario@email.com">
+<input type="password" placeholder="Senha">
+<h3>aaa</h3>
+
+<button class="login">Entrar</button>
+
+</form>
+
+</div>
+
+<div class="extra">
+Não tem conta? <span>Criar conta</span><br>
+<span>Esqueci minha senha</span>
+</div>
+
+</div>
+
+<script>
+
+const empresaBtn = document.getElementById("empresaBtn")
+const funcBtn = document.getElementById("funcBtn")
+
+const empresaForm = document.getElementById("empresaForm")
+const funcForm = document.getElementById("funcForm")
+
+const slider = document.getElementById("slider")
+
+empresaBtn.onclick = () => {
+
+slider.style.left = "0"
+
+empresaBtn.classList.add("active")
+funcBtn.classList.remove("active")
+
+empresaForm.classList.add("active")
+funcForm.classList.remove("active")
+
+}
+
+funcBtn.onclick = () => {
+
+slider.style.left = "50%"
+
+funcBtn.classList.add("active")
+empresaBtn.classList.remove("active")
+
+funcForm.classList.add("active")
+empresaForm.classList.remove("active")
+
+}
+
+</script>
+
+</body>
+</html>

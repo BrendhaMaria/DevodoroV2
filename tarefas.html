@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="layout.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+select{
+background:#111;
+border:1px solid #222;
+color:white;
+padding:8px 12px;
+border-radius:10px;
+}
+
+.task{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+.task p{
+color:#777;
+font-size:13px;
+}
+
+.tags{
+display:flex;
+gap:8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+<div>
+
+<div class="logo">
+<h2>DEVODORO</h2>
+</div>
+
+<nav>
+<a href="dashboard.html">Dashboard</a>
+<a class="active">Tarefas</a>
+<a href="equipe.html">Equipe</a>
+<a href="setores.html">Setores</a>
+<a href="configuracoes.html">Configurações</a>
+</nav>
+
+</div>
+</aside>
+
+<main class="main">
+
+<header>
+
+
+    <main class="main">
+
+        <header>
+
+            <div>
+                <h1>Dashboard</h1>
+                <span>quinta-feira, 12 de março</span>
+            </div>
+
+            <div class="header-right">
+
+                <input type="text" placeholder="Buscar tarefas...">
+
+                <button class="btn">+ Nova Tarefa</button>
+
+            </div>
+
+        </header>
+
+
+
+<div class="filters">
+<select>
+<option>Todas prioridades</option>
+</select>
+
+<select>
+<option>Todos status</option>
+</select>
+</div>
+
+<div class="card task">
+<div>
+<h3>lucas</h3>
+<p>buceta</p>
+</div>
+
+<div class="tags">
+<span class="tag red">Alta</span>
+<span class="tag green">Concluída</span>
+</div>
+</div>
+
+<div class="card task">
+<div>
+<h3>aaaaaaa</h3>
+<p>aaaaaaaaaaaaaaaaaaa</p>
+</div>
+
+<div class="tags">
+<span class="tag purple">Média</span>
+<span class="tag red">Pendente</span>
+</div>
+</div>
+
+</main>
+</div>
+
+</body>
+</html>
