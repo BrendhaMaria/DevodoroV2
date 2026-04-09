@@ -26,13 +26,15 @@ function dashboard() {
     </div>
 
     <div class="cards">
-      <div class="card"><p>Total</p><h2>${total}</h2></div>
-      <div class="card"><p>Concluídas</p><h2>${done}</h2></div>
-      <div class="card"><p>Em progresso</p><h2>${total - done}</h2></div>
-      <div class="card"><p>Atrasadas</p><h2>0</h2></div>
+      <div class="card" id="total"><p>Total</p><h2>${total}</h2></div>
+      <div class="card" id="concluidas"><p>Concluídas</p><h2>${done}</h2></div>
+      <div class="card" id="emprogresso"><p>Em progresso</p><h2>${total - done}</h2></div>
+      <div class="card" id="atrasados"><p>Atrasadas</p><h2>0</h2></div>
+      
     </div>
-
+  
     <div class="task-list">
+    <div class="tf">Tarefas Recentes</div>
       ${tasks.map(t => `
         <div class="task">
           ${t.text}
@@ -53,9 +55,9 @@ function tarefas() {
 
     <input id="taskInput" placeholder="Nome da tarefa" type="text">
     <select id="status">
-      <option value="high">Alta</option>
-      <option value="medium">Média</option>
-      <option value="done">Concluída</option>
+      <option value="Alta">Alta</option>
+      <option value="Média">Média</option>
+      <option value="Concluída">Concluída</option>
     </select>
 
     <div class="task-list">
@@ -64,7 +66,7 @@ function tarefas() {
           ${t.text}
           <span>
             <span class="badge ${t.status}">${t.status}</span>
-            <button onclick="removeTask(${i})">X</button>
+            <button class="btn-x" onclick="removeTask(${i})">X</button>
           </span>
         </div>
       `).join("")}
@@ -109,8 +111,8 @@ function config() {
     </div>
 
     <div class="card">
-      <input placeholder="Nome">
-      <input placeholder="Email">
+      <input placeholder="Nome" type="text" class="nome-user">
+      <input placeholder="Email" type="email" class="email-user">
       <button class="btn">Salvar</button>
     </div>
   `;
