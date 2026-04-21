@@ -223,19 +223,22 @@ color:#ff2a7f;
 
 /* ANSWER */
 
+
 .faq-answer{
-max-height:0;
-overflow:hidden;
-padding:0 22px;
+  transform:scaleY(0);
+  transform-origin:top;
+  transition:0.3s ease;
+  max-height:none;
+  
+
 color:#aaa;
 font-size:14px;
 line-height:1.6;
-transition:max-height 0.4s ease;
-}
 
+}
 .faq-item.active .faq-answer{
-max-height:100%;
-padding-bottom:20px;
+transform: scale(1);
+padding-bottom: 20px;
 }
 
 /* POPUP */

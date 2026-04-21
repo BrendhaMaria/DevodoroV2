@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../css/dashboard.css">
+</head>
+<body>
+    <div class="sidebar">
+  <div>
+    <div class="logo">DEVODORO</div>
+
+    <div class="nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="tarefas.html" class="active">Tarefas</a>
+      <a href="equipe.html">Equipe</a>
+      <a href="configuracoes.html">Configurações</a>
+    </div>
+  </div>
+
+  <div class="user">
+    <div class="avatar">B</div>
+    <div>
+      <strong>brendha</strong>
+      <p>Empresa</p>
+    </div>
+  </div>
+</div>
+<div class="main" id="app">
+    <div class="header">
+      <div class="title">Tarefas</div>
+      <button class="btn" onclick="addTask()">+ Nova</button>
+    </div>
+
+    <input id="taskInput" placeholder="Nome da tarefa" type="text">
+    <select id="status">
+      <option value="Alta">Alta</option>
+      <option value="Média">Média</option>
+      <option value="Concluída">Concluída</option>
+    </select>
+
+    <div class="task-list">
+    
+        <div class="task">
+          ${t.text}
+          <span>
+            <span class="badge ${t.status}">${t.status}</span>
+            <button class="btn-x" onclick="removeTask($i)">X</button>
+          </span>
+        </div>
+      
+    </div>
+</div>
+</body>
+</html>
