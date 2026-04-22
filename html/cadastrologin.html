@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Devodoro - Login</title>
-<link rel="stylesheet" href="../static/css/cadlogin.css">
+<link rel="stylesheet" href="../css/cadlogin.css">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 
@@ -30,18 +30,24 @@
     </div>
 
     <!-- LOGIN -->
-    <form id="loginForm">
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Senha" required>
-      <button class="submit">Entrar</button>
-      <div class="switch">Não tem conta? <span id="goRegister">Criar</span></div>
-    </form>
+<form id="loginForm" method="POST" action="../php/login.php">
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="senha" placeholder="Senha" required>
+  <input type="hidden" name="tipo" id="loginTipo">
+
+  <button class="submit">Entrar</button>
+  <div class="switch">Não tem conta? <span id="goRegister">Criar</span></div>
+</form>
 
     <!-- REGISTER -->
-    <form id="registerForm" class="hidden">
-      <input type="text" placeholder="Nome" required>
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Senha" required>
+    <form id="registerForm" method="POST" action="../php/cadastro.php" class="hidden">
+      <input type="text" name="nome" placeholder="Nome" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="senha" placeholder="Senha" required>
+      <!-- CNPJ (só empresa) -->
+      <input type="text" name="cnpj" id="cnpjField" placeholder="CNPJ" class="hidden">
+      <input type="hidden" name="tipo" id="registerTipo">
+
       <button class="submit">Cadastrar</button>
       <div class="switch">Já tem conta? <span id="goLogin">Entrar</span></div>
     </form>
@@ -56,10 +62,15 @@ const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 
 const empresaBtn = document.getElementById('empresaBtn');
+const cnpjField = document.getElementById("cnpjField");
 const funcionarioBtn = document.getElementById('funcionarioBtn');
 const roleSwitch = document.getElementById('roleSwitch');
 
 let role = "empresa";
+
+if (role === "empresa") {
+  cnpjField.classList.remove("hidden");
+}
 
 loginTab.onclick = () => {
   loginForm.classList.remove('hidden');
@@ -82,6 +93,11 @@ empresaBtn.onclick = () => {
   funcionarioBtn.classList.remove('active');
 }
 
+empresaBtn.addEventListener("click", () => {
+  role = "empresa";
+  cnpjField.classList.remove("hidden");
+});
+
 funcionarioBtn.onclick = () => {
   role = "funcionario";
   roleSwitch.classList.add('funcionario');
@@ -89,17 +105,20 @@ funcionarioBtn.onclick = () => {
   empresaBtn.classList.remove('active');
 }
 
+funcionarioBtn.addEventListener("click", () => {
+  role = "funcionario";
+  cnpjField.classList.add("hidden");
+});
+
 document.getElementById('goRegister').onclick = () => registerTab.click();
 document.getElementById('goLogin').onclick = () => loginTab.click();
 
-loginForm.onsubmit = (e)=>{
-  e.preventDefault();
-  alert(`Login como ${role}`);
+loginForm.onsubmit = ()=>{
+  document.getElementById("loginTipo").value = role;
 }
 
-registerForm.onsubmit = (e)=>{
-  e.preventDefault();
-  alert(`Cadastro como ${role}`);
+registerForm.onsubmit = ()=>{
+  document.getElementById("registerTipo").value = role;
 }
 
 </script>

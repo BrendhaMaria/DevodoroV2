@@ -51,15 +51,11 @@
   
     <div class="task-list">
     <div class="tf">Tarefas Recentes</div>
-      ${tasks.map(t => `
         <div class="task">
-          ${t.text}
           <span class="badge ${t.status}">${t.status}</span>
         </div>
-      `).join("")}
     </div>
 </div>
 
-<script src="js/app.js"></script>
 </body>
 </html>

@@ -38,6 +38,7 @@ body {
   color: #aaa;
   cursor: pointer;
   transition: .5s ease-in;
+  text-decoration: none;
 }
 
 .nav a.active{
