@@ -5,7 +5,7 @@ require_once "conexao.php";
  * Lista todas as tarefas
  */
 function listarTarefas($conn) {
-    $sql = "SELECT * FROM tarefas ORDER BY id DESC";
+    $sql = "SELECT * FROM tarefas ORDER BY id_tarefa DESC";
     $result = $conn->query($sql);
 
     $tarefas = [];
@@ -37,7 +37,7 @@ function criarTarefa($conn, $text, $status) {
  * Remove tarefa por ID
  */
 function deletarTarefa($conn, $id) {
-    $stmt = $conn->prepare("DELETE FROM tarefas WHERE id = ?");
+    $stmt = $conn->prepare("DELETE FROM tarefas WHERE id_tarefa = ?");
     $stmt->bind_param("i", $id);
 
     $ok = $stmt->execute();
@@ -49,7 +49,7 @@ function deletarTarefa($conn, $id) {
  * Atualiza status da tarefa
  */
 function atualizarStatus($conn, $id, $status) {
-    $stmt = $conn->prepare("UPDATE tarefas SET status = ? WHERE id = ?");
+    $stmt = $conn->prepare("UPDATE tarefas SET status = ? WHERE id_tarefa = ?");
     $stmt->bind_param("si", $status, $id);
 
     $ok = $stmt->execute();
