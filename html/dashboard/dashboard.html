@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <title>Devodoro</title>
-
+<script>
+  if (localStorage.getItem("theme") === "dark") {
+    document.documentElement.classList.add("dark");
+  }
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../css/dashboard.css">
 
@@ -42,9 +46,9 @@
     </div>
 
     <div class="cards">
-      <div class="card" id="total"><p>Total</p><h2>${total}</h2></div>
-      <div class="card" id="concluidas"><p>Concluídas</p><h2>${done}</h2></div>
-      <div class="card" id="emprogresso"><p>Em progresso</p><h2>${total - done}</h2></div>
+      <div class="card" id="total"><p>Total</p><h2></h2></div>
+      <div class="card" id="concluidas"><p>Concluídas</p><h2></h2></div>
+      <div class="card" id="emprogresso"><p>Em progresso</p><h2></h2></div>
       <div class="card" id="atrasados"><p>Atrasadas</p><h2>0</h2></div>
       
     </div>
@@ -52,7 +56,7 @@
     <div class="task-list">
     <div class="tf">Tarefas Recentes</div>
         <div class="task">
-          <span class="badge ${t.status}">${t.status}</span>
+          <span class="badge ${t.status}"></span>
         </div>
     </div>
 </div>

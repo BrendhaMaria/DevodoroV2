@@ -33,10 +33,37 @@
     </div>
 
     <div class="card">
-      <input placeholder="Nome" type="text" class="nome-user">
-      <input placeholder="Email" type="email" class="email-user">
-      <button class="btn">Salvar</button>
+    <h2>Aparência</h2>
+    <div class="modoescuro">
+      <span>Modo escuro/Claro</span> <br>
+      <button id="escuro">Alternar</button>
+      <br><br>
+      <div class="settings">
+
+  <h1>Conta e Perfil</h1>
+
+  <div class="setting-group">
+
+    <div class="setting-item">
+      <label>Nome</label>
+      <input type="text" id="nameInput" placeholder="Seu nome">
     </div>
+
+    <div class="setting-item">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="seu@email.com">
+    </div>
+
+    <div class="setting-item">
+      <label>Avatar</label>
+      <input type="file" id="avatarInput">
+    </div>
+
+    <button class="btn" id="saveProfile">Salvar</button>
+  </div>
 </div>
+    
+
+<script src="../../js/modoescuro.js"></script>
 </body>
 </html>

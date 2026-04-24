@@ -1,3 +1,5 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 * {
   margin: 0;
   padding: 0;
@@ -7,20 +9,21 @@
 
 body {
   display: flex;
-  background: #050505;
-  color: white;
+  background: var(--bg);
+  color: var(--text);
 }
+
 
 /* SIDEBAR */
 .sidebar {
   width: 240px;
   height: 100vh;
-  background: #0b0b0b;
+  background: var(--sidebar);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 20px;
-  border-right: 1px solid #111;
+  border-right: 1px solid var(--border);
 }
 
 .logo {
@@ -35,14 +38,14 @@ body {
   padding: 8px;
   border-radius: 10px;
   margin-bottom: 10px;
-  color: #aaa;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: .5s ease-in;
   text-decoration: none;
 }
 
 .nav a.active{
-  background: rgba(133, 8, 50, 0.212);
+  background: var(--sidebtn-bg);
   box-shadow:0 0 5dvb rgba(255, 3, 100, 0.548);
   color: rgb(255, 0, 119);
 }
@@ -52,7 +55,7 @@ body {
 }
 
 .nav a:hover:not(.active){
-  background: #5c5c5c36;
+  background: var(--side-bg);
 }
 
 /* USER */
@@ -98,11 +101,11 @@ body {
   width: 200px;
 }
 .search {
-  background: #0f0f0f;
+  background: var(--input);
   border: none;
   padding: 10px;
   border-radius: 10px;
-  color: white;
+  color: var(--text);
 }
 
 .btn {
@@ -122,7 +125,7 @@ body {
 }
 
 .card {
-  background: #0d0d0d;
+  background: var(--card);
   padding: 20px;
   border-radius: 15px;
   position: relative;
@@ -137,11 +140,11 @@ body {
 /* TASK LIST */
 .task-list {
   margin-top: 30px;
-  background: #050505;
+  background: var(--bg);
 }
 
 .task {
-  background: #0d0d0d;
+  background: var(--card);
   padding: 15px;
   border-radius: 12px;
   margin-bottom: 10px;
@@ -163,9 +166,9 @@ body {
   width: 300px;
   padding: 10px;
   border-radius: 10px;
-  border: rgb(82, 81, 81) solid 1px;
-  background: #0f0f0f;
-  color: rgb(233, 232, 232);
+  border: 1px solid var(--border);
+  background: var(--input);
+  color: var(--text);
 }
 #status{
   background: linear-gradient(90deg, #ff0066, #00c6ff);
@@ -177,7 +180,8 @@ body {
   border: none;
 }
 option{
-  background: #050505;
+  background: var(--bg);
+  color: var(--text);
 }
 .btn-x{
   background: transparent;
@@ -189,19 +193,67 @@ option{
 }
 #total{
   box-shadow:0 0 5dvb rgba(194, 3, 114, 0.548);
-  border: solid 1px #242424;
+  border: solid 1px var(--border)
 }
 #concluidas{
   box-shadow:0 0 5dvb rgba(3, 181, 194, 0.548);
-  border: solid 1px #242424; 
+  border: solid 1px var(--border)
 }
 #emprogresso{
   box-shadow:0 0 5dvb rgba(172, 3, 194, 0.548);
-  border: solid 1px #242424;
+  border: solid 1px var(--border)
 }
 #atrasados{
-  border: solid 1px #242424;
+  border: solid 1px var(--border)
 }
 .tf{
   font-size: 20px;
+}
+
+/*mudança de cor*/
+:root {
+  --bg: #f5f5f5;
+  --sidebar: #ffffff;
+  --card: #ffffff;
+  --text: #000000;
+  --text-secondary: #555;
+  --border: #cecece;
+  --input: #eeeeee;
+  --side-bg: #ffeef131;
+  --sidebtn-bg: rgba(252, 196, 214, 0.212);
+  
+}
+.dark {
+  --bg: #050505;
+  --sidebar: #0b0b0b;
+  --card: #0d0d0d;
+  --text: #ffffff;
+  --text-secondary: #aaa;
+  --border: #353535;
+  --input: #0f0f0f;
+  --side-bg: #4747473a;
+  --sidebtn-bg: rgba(133, 8, 50, 0.212);
+}
+#escuro{
+  padding: 3px;
+   background: var(--bg);
+  border: solid 1px var(--border); 
+  padding: 10px 15px;
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+}
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+}
+
+.setting-item input {
+  margin-top: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--input);
+  color: var(--text);
 }
