@@ -11,17 +11,11 @@ $tipo = $_POST['tipo'];
 
 if ($tipo === "empresa") {
 
-    $cnpj = $_POST['cnpj'];
-
-    if (!$cnpj) {
-        die("CNPJ obrigatório");
-    }
-
-    $sql = "INSERT INTO empresa (nome, email, senha, cnpj)
-            VALUES (?, ?, ?, ?)";
+    $sql = "INSERT INTO empresa (nome, email, senha)
+            VALUES (?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssss", $nome, $email, $senha, $cnpj);
+    $stmt->bind_param("sss", $nome, $email, $senha);
 
 } else {
 

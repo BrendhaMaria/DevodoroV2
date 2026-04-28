@@ -44,8 +44,6 @@
       <input type="text" name="nome" placeholder="Nome" required>
       <input type="email" name="email" placeholder="Email" required>
       <input type="password" name="senha" placeholder="Senha" required>
-      <!-- CNPJ (só empresa) -->
-      <input type="hidden" name="cnpj" id="cnpjField" placeholder="CNPJ" class="hidden">
       <input type="hidden" name="tipo" id="registerTipo">
 
       <button class="submit">Cadastrar</button>
@@ -62,15 +60,10 @@ const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
 
 const empresaBtn = document.getElementById('empresaBtn');
-const cnpjField = document.getElementById("cnpjField");
 const funcionarioBtn = document.getElementById('funcionarioBtn');
 const roleSwitch = document.getElementById('roleSwitch');
 
 let role = "empresa";
-
-if (role === "empresa") {
-  cnpjField.classList.remove("hidden");
-}
 
 loginTab.onclick = () => {
   loginForm.classList.remove('hidden');
@@ -93,10 +86,6 @@ empresaBtn.onclick = () => {
   funcionarioBtn.classList.remove('active');
 }
 
-empresaBtn.addEventListener("click", () => {
-  role = "empresa";
-  cnpjField.classList.remove("hidden");
-});
 
 funcionarioBtn.onclick = () => {
   role = "funcionario";
@@ -104,11 +93,6 @@ funcionarioBtn.onclick = () => {
   funcionarioBtn.classList.add('active');
   empresaBtn.classList.remove('active');
 }
-
-funcionarioBtn.addEventListener("click", () => {
-  role = "funcionario";
-  cnpjField.classList.add("hidden");
-});
 
 document.getElementById('goRegister').onclick = () => registerTab.click();
 document.getElementById('goLogin').onclick = () => loginTab.click();
