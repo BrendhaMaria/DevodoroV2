@@ -9,6 +9,10 @@ $email = $_POST['email'] ?? null;
 $senha = $_POST['senha'] ?? null;
 $tipo  = $_POST['tipo'] ?? null;
 
+/* =========================
+   VALIDAÇÃO
+========================= */
+
 if (!$email || !$senha || !$tipo) {
     die("Dados incompletos");
 }
@@ -18,7 +22,8 @@ if (!$email || !$senha || !$tipo) {
 ========================= */
 
 if ($tipo === "empresa") {
-    $sql = "SELECT * FROM empresa WHERE email = ?";
+
+    $sql = "SELECT id_empresa, nome, senha FROM empresa WHERE email = ?";
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) die("Erro SQL: " . $conn->error);
@@ -31,7 +36,11 @@ if ($tipo === "empresa") {
 ========================= */
 
 else {
-    $sql = "SELECT * FROM funcionario WHERE email = ?";
+
+    $sql = "SELECT id_funcionario, nome, senha, id_empresa 
+            FROM funcionario 
+            WHERE email = ?";
+
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) die("Erro SQL: " . $conn->error);
@@ -41,6 +50,10 @@ else {
 
 $stmt->execute();
 $result = $stmt->get_result();
+
+/* =========================
+   USUÁRIO EXISTE?
+========================= */
 
 if ($result->num_rows !== 1) {
     die("Usuário não encontrado");
@@ -63,12 +76,23 @@ if (!password_verify($senha, $user['senha'])) {
 $_SESSION['tipo'] = $tipo;
 $_SESSION['nome'] = $user['nome'];
 
+/* =========================
+   DIFERENCIAÇÃO
+========================= */
+
 if ($tipo === "empresa") {
-    $_SESSION['id'] = $user['id_empresa'];
+
+    $_SESSION['id_empresa'] = $user['id_empresa'];
 
 } else {
-    $_SESSION['id'] = $user['id_funcionario'];
-    $_SESSION['empresa'] = $user['id_empresa'] ?? null;
+
+    $_SESSION['id_funcionario'] = $user['id_funcionario'];
+    $_SESSION['id_empresa']     = $user['id_empresa'];
+
+    // proteção básica (não deveria acontecer, mas evita bug)
+    if (!$user['id_empresa']) {
+        die("Funcionário sem empresa vinculada");
+    }
 }
 
 /* =========================

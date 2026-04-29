@@ -81,15 +81,16 @@ if ($method === "POST") {
         errorResponse("JSON inválido", $raw);
     }
 
-    $text = $data["text"] ?? null;
-    $status = $data["status"] ?? "Alta";
+    $titulo = $data["titulo"] ?? null;
+    $status = $data["status"] ?? "PENDENTE";
+    $prioridade = $data["prioridade"] ?? "MEDIA";
 
-    if (!$text) {
-        errorResponse("Texto da tarefa vazio");
+    if (!$titulo) {
+        errorResponse("Titulo da tarefa vazio");
     }
 
     try {
-        $resultado = criarTarefa($conn, $text, $status);
+        $resultado = criarTarefa($conn, $titulo, $status, $prioridade);
         response($resultado);
     } catch (Exception $e) {
         errorResponse("Erro ao criar tarefa", $e->getMessage());

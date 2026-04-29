@@ -1,12 +1,19 @@
 <?php
 require_once "conexao.php";
+session_start();
 
 /**
- * Lista todas as tarefas
+ * Lista tarefas da empresa logada
  */
 function listarTarefas($conn) {
-    $sql = "SELECT * FROM tarefas ORDER BY id_tarefa DESC";
-    $result = $conn->query($sql);
+    $id_empresa = $_SESSION['id_empresa'];
+
+    $stmt = $conn->prepare("SELECT * FROM tarefas WHERE id_empresa = ? ORDER BY id_tarefa DESC");
+
+    $stmt->bind_param("i", $id_empresa);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
 
     $tarefas = [];
 
@@ -20,17 +27,17 @@ function listarTarefas($conn) {
 /**
  * Cria uma nova tarefa
  */
-function criarTarefa($conn, $text, $status) {
-    if (empty($text)) {
-        return ["success" => false, "error" => "Texto vazio"];
+function criarTarefa($conn, $titulo, $status) {
+    $id_empresa = $_SESSION['id_empresa'];
+
+    if (empty($titulo)) {
+        return ["success" => false, "error" => "Título vazio"];
     }
 
-    $stmt = $conn->prepare("INSERT INTO tarefas (text, status) VALUES (?, ?)");
-    $stmt->bind_param("ss", $text, $status);
+    $stmt = $conn->prepare("INSERT INTO tarefas (titulo, status, prioridade, id_empresa) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("sssi", $titulo, $status, $prioridade, $id_empresa);
 
-    $ok = $stmt->execute();
-
-    return ["success" => $ok];
+    return ["success" => $stmt->execute()];
 }
 
 /**
@@ -38,11 +45,10 @@ function criarTarefa($conn, $text, $status) {
  */
 function deletarTarefa($conn, $id) {
     $stmt = $conn->prepare("DELETE FROM tarefas WHERE id_tarefa = ?");
+    
     $stmt->bind_param("i", $id);
 
-    $ok = $stmt->execute();
-
-    return ["success" => $ok];
+    return ["success" => $stmt->execute()];
 }
 
 /**
@@ -50,10 +56,9 @@ function deletarTarefa($conn, $id) {
  */
 function atualizarStatus($conn, $id, $status) {
     $stmt = $conn->prepare("UPDATE tarefas SET status = ? WHERE id_tarefa = ?");
+    
     $stmt->bind_param("si", $status, $id);
 
-    $ok = $stmt->execute();
-
-    return ["success" => $ok];
+    return ["success" => $stmt->execute()];
 }
 ?>

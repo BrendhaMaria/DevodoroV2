@@ -21,10 +21,11 @@ function renderTasks(tasks) {
   tasks.forEach(task => {
     list.innerHTML += `
       <div class="task">
-        ${task.text}
+        ${task.titulo}
         <span>
-          <span class="badge ${task.status}">${task.status}</span>
-          <button class="btn-x" onclick="deleteTask(${task.id})">X</button>
+          <span class="badge">${task.status}</span>
+          <span class="badge">${task.prioridade}</span>
+          <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">X</button>
         </span>
       </div>
     `;
@@ -37,10 +38,11 @@ function renderTasks(tasks) {
 async function addTask() {
   const input = document.getElementById("taskInput");
   const status = document.getElementById("status");
+  const prioridade = document.getElementById("prioridade");
 
-  const text = input.value;
+  const titulo = input.value;
 
-  if (!text) return;
+  if (!titulo) return;
 
   await fetch(API_URL, {
     method: "POST",
@@ -48,13 +50,13 @@ async function addTask() {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      text: text,
-      status: status.value
+      titulo: titulo,
+      status: status.value,
+      prioridade: prioridade.value
     })
   });
 
   input.value = "";
-
   loadTasks();
 }
 

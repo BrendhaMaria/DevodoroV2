@@ -44,6 +44,8 @@
       <input type="text" name="nome" placeholder="Nome" required>
       <input type="email" name="email" placeholder="Email" required>
       <input type="password" name="senha" placeholder="Senha" required>
+      <input type="text" name="codigo_empresa" id="codigoEmpresa" placeholder="Código da empresa" style="display:none;">
+
       <input type="hidden" name="tipo" id="registerTipo">
 
       <button class="submit">Cadastrar</button>
@@ -58,6 +60,7 @@ const loginTab = document.getElementById('loginTab');
 const registerTab = document.getElementById('registerTab');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
+const codigoInput = document.getElementById("codigoEmpresa");
 
 const empresaBtn = document.getElementById('empresaBtn');
 const funcionarioBtn = document.getElementById('funcionarioBtn');
@@ -84,6 +87,8 @@ empresaBtn.onclick = () => {
   roleSwitch.classList.remove('funcionario');
   empresaBtn.classList.add('active');
   funcionarioBtn.classList.remove('active');
+
+  codigoInput.style.display = "none";
 }
 
 
@@ -92,6 +97,8 @@ funcionarioBtn.onclick = () => {
   roleSwitch.classList.add('funcionario');
   funcionarioBtn.classList.add('active');
   empresaBtn.classList.remove('active');
+
+  codigoInput.style.display = "block";
 }
 
 document.getElementById('goRegister').onclick = () => registerTab.click();
@@ -103,6 +110,11 @@ loginForm.onsubmit = ()=>{
 
 registerForm.onsubmit = ()=>{
   document.getElementById("registerTipo").value = role;
+
+  if (role === "funcionario" && !codigoInput.value) {
+    alert("Informe o código da empresa");
+    return false;
+  }
 }
 
 </script>
