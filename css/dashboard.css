@@ -33,6 +33,7 @@ body {
   margin-bottom: 30px;
 }
 
+
 .nav a {
   display: flex;
   padding: 8px;
@@ -170,7 +171,7 @@ body {
   background: var(--input);
   color: var(--text);
 }
-#status{
+select#estado,select#prioridade{
   background: linear-gradient(90deg, #ff0066, #00c6ff);
   color: white;
   padding: 7px;
@@ -221,6 +222,7 @@ option{
   --input: #eeeeee;
   --side-bg: #ffeef131;
   --sidebtn-bg: rgba(252, 196, 214, 0.212);
+  --conf: #b4b4b4;
   
 }
 .dark {
@@ -233,6 +235,7 @@ option{
   --input: #0f0f0f;
   --side-bg: #4747473a;
   --sidebtn-bg: rgba(133, 8, 50, 0.212);
+  --conf: #303030;
 }
 #escuro{
   padding: 3px;
@@ -256,4 +259,7 @@ option{
   border: 1px solid var(--border);
   background: var(--input);
   color: var(--text);
+}
+#conf{
+  color: var(--conf);
 }
