@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Tempo de geração: 29/04/2026 às 16:07
+-- Tempo de geração: 30/04/2026 às 13:05
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -16,6 +16,9 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+
+CREATE DATABASE devodoro;
+USE devodoro;
 
 --
 -- Banco de dados: `devodoro`
@@ -65,7 +68,6 @@ INSERT INTO `empresa` (`id_empresa`, `nome`, `email`, `senha`, `data_cadastro`, 
 CREATE TABLE `funcionario` (
   `id_funcionario` int(11) NOT NULL,
   `nome` varchar(150) NOT NULL,
-  `cpf` varchar(14) DEFAULT NULL,
   `email` varchar(150) NOT NULL,
   `senha` varchar(255) NOT NULL,
   `tipo_usuario` varchar(20) DEFAULT 'FUNCIONARIO',
@@ -77,8 +79,8 @@ CREATE TABLE `funcionario` (
 -- Despejando dados para a tabela `funcionario`
 --
 
-INSERT INTO `funcionario` (`id_funcionario`, `nome`, `cpf`, `email`, `senha`, `tipo_usuario`, `ativo`, `id_empresa`) VALUES
-(1, 'Lucas Brasil', NULL, 'lucasbr@gmail.com', '$2y$10$PfeTF3ORREk90i9gyJ561eFKDvSlxGePVMTcLuJNHNmgG0LoIX7ca', 'FUNCIONARIO', 1, 1);
+INSERT INTO `funcionario` (`id_funcionario`, `nome`, `email`, `senha`, `tipo_usuario`, `ativo`, `id_empresa`) VALUES
+(1, 'Lucas Brasil', 'lucasbr@gmail.com', '$2y$10$PfeTF3ORREk90i9gyJ561eFKDvSlxGePVMTcLuJNHNmgG0LoIX7ca', 'FUNCIONARIO', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -90,9 +92,18 @@ CREATE TABLE `tarefas` (
   `id_tarefa` int(11) NOT NULL,
   `titulo` varchar(200) NOT NULL,
   `prioridade` varchar(20) DEFAULT 'MEDIA',
-  `status` varchar(20) DEFAULT 'PENDENTE',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `estado` varchar(20) DEFAULT 'PENDENTE',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `id_empresa` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `tarefas`
+--
+
+INSERT INTO `tarefas` (`id_tarefa`, `titulo`, `prioridade`, `estado`, `created_at`, `id_empresa`) VALUES
+(1, 'tarefa', NULL, 'PENDENTE', '2026-04-29 14:56:05', 2),
+(3, 'gswdgsd', NULL, 'EM_ANDAMENTO', '2026-04-30 11:00:04', 1);
 
 -- --------------------------------------------------------
 
@@ -147,7 +158,8 @@ ALTER TABLE `funcionario`
 -- Índices de tabela `tarefas`
 --
 ALTER TABLE `tarefas`
-  ADD PRIMARY KEY (`id_tarefa`);
+  ADD PRIMARY KEY (`id_tarefa`),
+  ADD KEY `fk_tarefa_empresa` (`id_empresa`);
 
 --
 -- Índices de tabela `tarefa_categoria`
@@ -189,7 +201,7 @@ ALTER TABLE `funcionario`
 -- AUTO_INCREMENT de tabela `tarefas`
 --
 ALTER TABLE `tarefas`
-  MODIFY `id_tarefa` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_tarefa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restrições para tabelas despejadas
@@ -206,6 +218,12 @@ ALTER TABLE `categoria`
 --
 ALTER TABLE `funcionario`
   ADD CONSTRAINT `funcionario_ibfk_1` FOREIGN KEY (`id_empresa`) REFERENCES `empresa` (`id_empresa`);
+
+--
+-- Restrições para tabelas `tarefas`
+--
+ALTER TABLE `tarefas`
+  ADD CONSTRAINT `fk_tarefa_empresa` FOREIGN KEY (`id_empresa`) REFERENCES `empresa` (`id_empresa`);
 
 --
 -- Restrições para tabelas `tarefa_categoria`

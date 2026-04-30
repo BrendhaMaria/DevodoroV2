@@ -8,8 +8,8 @@ ini_set('display_errors', 1);
 header("Content-Type: application/json");
 
 // Função padrão de resposta
-function response($data, $status = 200) {
-    http_response_code($status);
+function response($data, $estado = 200) {
+    http_response_code($estado);
     echo json_encode($data);
     exit;
 }
@@ -82,7 +82,7 @@ if ($method === "POST") {
     }
 
     $titulo = $data["titulo"] ?? null;
-    $status = $data["status"] ?? "PENDENTE";
+    $estado = $data["estado"] ?? "PENDENTE";
     $prioridade = $data["prioridade"] ?? "MEDIA";
 
     if (!$titulo) {
@@ -90,7 +90,7 @@ if ($method === "POST") {
     }
 
     try {
-        $resultado = criarTarefa($conn, $titulo, $status, $prioridade);
+        $resultado = criarTarefa($conn, $titulo, $estado, $prioridade);
         response($resultado);
     } catch (Exception $e) {
         errorResponse("Erro ao criar tarefa", $e->getMessage());
@@ -121,12 +121,12 @@ if ($method === "DELETE") {
 if ($method === "PUT") {
     $data = json_decode(file_get_contents("php://input"), true);
 
-    if (!$data || !isset($data["id_tarefa"]) || !isset($data["status"])) {
+    if (!$data || !isset($data["id_tarefa"]) || !isset($data["estado"])) {
         errorResponse("Dados incompletos");
     }
 
     try {
-        $resultado = atualizarStatus($conn, $data["id_tarefa"], $data["status"]);
+        $resultado = atualizarStatus($conn, $data["id_tarefa"], $data["estado"]);
         response($resultado);
     } catch (Exception $e) {
         errorResponse("Erro ao atualizar", $e->getMessage());

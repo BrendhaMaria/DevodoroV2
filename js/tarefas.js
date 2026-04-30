@@ -23,7 +23,7 @@ function renderTasks(tasks) {
       <div class="task">
         ${task.titulo}
         <span>
-          <span class="badge">${task.status}</span>
+          <span class="badge">${task.estado}</span>
           <span class="badge">${task.prioridade}</span>
           <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">X</button>
         </span>
@@ -32,13 +32,24 @@ function renderTasks(tasks) {
   });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  loadTasks();
+});
+
 // ==========================
 // CRIAR TAREFA
 // ==========================
 async function addTask() {
   const input = document.getElementById("taskInput");
-  const status = document.getElementById("status");
+  const estado = document.getElementById("estado");
   const prioridade = document.getElementById("prioridade");
+
+  console.log({ input, estado, prioridade });
+
+  if (!input || !estado || !prioridade) {
+    console.error("Elementos não encontrados no DOM");
+    return;
+  }
 
   const titulo = input.value;
 
@@ -50,14 +61,13 @@ async function addTask() {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      titulo: titulo,
-      status: status.value,
+      titulo,
+      estado: estado.value,
       prioridade: prioridade.value
     })
   });
 
   input.value = "";
-  loadTasks();
 }
 
 // ==========================
