@@ -130,7 +130,7 @@ body {
   padding: 20px;
   border-radius: 15px;
   position: relative;
-  box-shadow: 0 0 30px rgba(255, 0, 100, 0.1);
+  box-shadow: var(--card2);
 }
 
 .card h2 {
@@ -223,6 +223,7 @@ option{
   --side-bg: #ffeef131;
   --sidebtn-bg: rgba(252, 196, 214, 0.212);
   --conf: #b4b4b4;
+  --card2: 0 0 30px rgba(255, 0, 102, 0.192);
   
 }
 .dark {
@@ -236,6 +237,7 @@ option{
   --side-bg: #4747473a;
   --sidebtn-bg: rgba(133, 8, 50, 0.212);
   --conf: #303030;
+  --card2: 0 0 30px rgba(255, 0, 102, 0.315);
 }
 #escuro{
   padding: 3px;
@@ -262,4 +264,35 @@ option{
 }
 #conf{
   color: var(--conf);
+}
+.pomodoro {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(255, 0, 100, 0.1);
+  text-align: center;
+  box-shadow: var(--card2);
+
+  /* faz ocupar mais espaço */
+  grid-column: span 2;
+}
+
+#timer {
+  font-size: 42px;
+  margin: 15px 0;
+}
+
+#mode {
+  color: #ff2d75;
+  font-weight: 600;
+}
+
+.buttons button {
+  margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 15px;
+  background: linear-gradient(90deg, #ff0066, #00c6ff);
+  color: white;
+  cursor: pointer;
 }

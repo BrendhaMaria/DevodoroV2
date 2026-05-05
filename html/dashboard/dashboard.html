@@ -50,7 +50,20 @@
       <div class="card" id="concluidas"><p>Concluídas</p><h2></h2></div>
       <div class="card" id="emprogresso"><p>Em progresso</p><h2></h2></div>
       <div class="card" id="atrasados"><p>Atrasadas</p><h2>0</h2></div>
-      
+
+      <div class="pomodoro">
+  <h3 id="mode">FOCO</h3>
+
+  <div id="timer">25:00</div>
+
+  <div class="buttons">
+    <button onclick="startTimer()">Iniciar</button>
+    <button onclick="pauseTimer()">Pausar</button>
+    <button onclick="resetTimer()">Resetar</button>
+  </div>
+
+  <p>Ciclos: <span id="cycles">0</span></p>
+</div>
     </div>
   
     <div class="task-list">
@@ -60,6 +73,6 @@
         </div>
     </div>
 </div>
-
+<script src="../../js/dashboard.js"></script>
 </body>
 </html>
