@@ -35,29 +35,60 @@
 
 <div class="main" id="app">
     <div class="header">
-      <div class="title">Tarefas</div>
-      <button class="btn" onclick="addTask()">+ Nova</button>
-    </div>
+  <div class="title">Tarefas</div>
 
-    <input id="taskInput" placeholder="Nome da tarefa" type="text">
+  <div class="actions">
+    <input class="search" placeholder="Buscar tarefas...">
+    <button class="btn" onclick="openModal()">+ Nova Tarefa</button>
+  </div>
+</div>
 
-    <select  id="prioridade">
-      <option value="BAIXA">Baixa</option>
-      <option value="MEDIA">Média</option>
-      <option value="ALTA">Alta</option>
-    </select>
-    
-    <select id="estado">
-      <option value="PENDENTE">Pendente</option>
-      <option value="EM_ANDAMENTO">Em andamento</option>
-      <option value="CONCLUIDA">Concluída</option>
-    </select>
-
+<!-- LISTA -->
 <div class="task-list" id="taskList"></div>
 
+<!-- ========================= -->
+<!-- MODAL NOVA TAREFA -->
+<!-- ========================= -->
+<div class="modal" id="taskModal">
+  <div class="modal-content">
 
+    <div class="modal-header">
+      <h2>Nova Tarefa</h2>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
 
+    <div class="modal-body">
+
+      <label>Título</label>
+      <input type="text" id="taskInput" placeholder="Digite o título">
+
+      <label>Prioridade</label>
+      <select id="prioridade">
+        <option value="BAIXA">Baixa</option>
+        <option value="MEDIA">Média</option>
+        <option value="ALTA">Alta</option>
+      </select>
+
+      <label>Status</label>
+      <select id="estado">
+        <option value="PENDENTE">Pendente</option>
+        <option value="EM_PROGRESSO">Em progresso</option>
+        <option value="CONCLUIDA">Concluída</option>
+      </select>
+
+      <label>Prazo de entrega</label>
+      <input type="date" id="prazo">
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="addTask()">Criar tarefa</button>
+    </div>
+
+  </div>
 </div>
+<div class="task-list" id="taskList"></div>
 
 <script src="../../js/tarefas.js"></script>
 </body>

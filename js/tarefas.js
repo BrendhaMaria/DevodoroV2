@@ -10,10 +10,6 @@ async function loadTasks() {
 
   renderTasks(tasks);
 }
-
-// ==========================
-// RENDERIZAR NA TELA
-// ==========================
 function renderTasks(tasks) {
   const list = document.getElementById("taskList");
   list.innerHTML = "";
@@ -21,21 +17,26 @@ function renderTasks(tasks) {
   tasks.forEach(task => {
     list.innerHTML += `
       <div class="task">
-        ${task.titulo}
+        <div>
+          <strong>${task.titulo}</strong>
+          <p>Prazo: ${task.prazo_entrega || "Sem prazo"}</p>
+        </div>
+
         <span>
           <span class="badge">${task.estado}</span>
           <span class="badge">${task.prioridade}</span>
-          <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">X</button>
+
+          <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">
+            X
+          </button>
         </span>
       </div>
     `;
   });
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   loadTasks();
 });
-
 // ==========================
 // CRIAR TAREFA
 // ==========================
@@ -43,13 +44,7 @@ async function addTask() {
   const input = document.getElementById("taskInput");
   const estado = document.getElementById("estado");
   const prioridade = document.getElementById("prioridade");
-
-  console.log({ input, estado, prioridade });
-
-  if (!input || !estado || !prioridade) {
-    console.error("Elementos não encontrados no DOM");
-    return;
-  }
+  const prazo = document.getElementById("prazo");
 
   const titulo = input.value;
 
@@ -63,13 +58,17 @@ async function addTask() {
     body: JSON.stringify({
       titulo,
       estado: estado.value,
-      prioridade: prioridade.value
+      prioridade: prioridade.value,
+      prazo_entrega: prazo.value
     })
   });
 
   input.value = "";
-}
+  prazo.value = "";
 
+  closeModal();
+  loadTasks();
+}
 // ==========================
 // DELETAR TAREFA
 // ==========================
@@ -89,4 +88,17 @@ async function deleteTask(id) {
 // INICIAR
 // ==========================
 loadTasks();
+// ==========================
+// ABRIR MODAL
+// ==========================
+function openModal() {
+  document.getElementById("taskModal").classList.add("active");
+}
+
+// ==========================
+// FECHAR MODAL
+// ==========================
+function closeModal() {
+  document.getElementById("taskModal").classList.remove("active");
+}
 
