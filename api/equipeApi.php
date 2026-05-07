@@ -13,46 +13,72 @@ if (!$id_empresa) {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-/* =========================
-   ADICIONAR FUNCIONÁRIO NA EQUIPE
-========================= */
+/* =====================================================
+   LISTAR EQUIPES
+===================================================== */
+if ($method === "GET") {
+
+    $stmt = $conn->prepare("
+        SELECT id, nome
+        FROM equipe
+        WHERE id_empresa = ?
+    ");
+
+    $stmt->bind_param("i", $id_empresa);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+    exit;
+}
+
+/* =====================================================
+   CRIAR EQUIPE
+===================================================== */
 if ($method === "POST") {
 
     $data = json_decode(file_get_contents("php://input"), true);
 
-    $id_equipe = $data["id_equipe"];
-    $id_funcionario = $data["id_funcionario"];
+    $nome = $data["nome"] ?? null;
+
+    if (!$nome) {
+        echo json_encode(["error" => "nome obrigatório"]);
+        exit;
+    }
 
     $stmt = $conn->prepare("
-        INSERT INTO equipe_funcionario (id_equipe, id_funcionario)
+        INSERT INTO equipe (nome, id_empresa)
         VALUES (?, ?)
     ");
 
-    $stmt->bind_param("ii", $id_equipe, $id_funcionario);
+    $stmt->bind_param("si", $nome, $id_empresa);
     $stmt->execute();
 
     echo json_encode(["status" => "ok"]);
     exit;
 }
 
-/* =========================
-   LISTAR FUNCIONÁRIOS DE UMA EQUIPE
-========================= */
-if ($method === "GET") {
+/* =====================================================
+   REMOVER EQUIPE
+===================================================== */
+if ($method === "DELETE") {
 
-    $id_equipe = $_GET["id_equipe"];
+    $id = $_GET["id"] ?? null;
+
+    if (!$id) {
+        echo json_encode(["error" => "id obrigatório"]);
+        exit;
+    }
 
     $stmt = $conn->prepare("
-        SELECT f.id_funcionario, f.nome, f.email
-        FROM equipe_funcionario ef
-        JOIN funcionario f ON ef.id_funcionario = f.id_funcionario
-        WHERE ef.id_equipe = ?
+        DELETE FROM equipe
+        WHERE id = ? AND id_empresa = ?
     ");
 
-    $stmt->bind_param("i", $id_equipe);
+    $stmt->bind_param("ii", $id, $id_empresa);
     $stmt->execute();
 
-    $result = $stmt->get_result();
-    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+    echo json_encode(["status" => "ok"]);
     exit;
 }

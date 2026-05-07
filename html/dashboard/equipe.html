@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,7 +39,7 @@
 
     <div class="header">
       <div class="title">Equipes</div>
-      <button class="btn" onclick="openModal()">Criar equipe</button>
+      <button class="btn" onclick="createTeam()">Criar equipe</button>
     </div>
 
     <div id="teamList"></div>
@@ -91,7 +91,7 @@ async function loadTeamMembers() {
 }
 
 async function loadAvailableEmployees() {
-    const res = await fetch("../../api/funcionariosDisponiveis.php");
+    const res = await fetch(`../../api/funcionariosDisponiveis.php?id_equipe=${selectedTeam}`);
     const data = await res.json();
 
     document.getElementById("availableEmployees").innerHTML =
@@ -101,6 +101,23 @@ async function loadAvailableEmployees() {
                 <button onclick="addToTeam(${f.id_funcionario})">Adicionar</button>
             </div>
         `).join("");
+}
+
+async function createTeam() {
+
+    const nome = prompt("Nome da equipe:");
+
+    if (!nome) return;
+
+    await fetch("../../api/equipeApi.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ nome })
+    });
+
+    loadTeams();
 }
 
 async function addToTeam(idFuncionario) {
