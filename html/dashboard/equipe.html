@@ -90,6 +90,18 @@ async function loadTeamMembers() {
         `).join("");
 }
 
+async function removeFromTeam(idFuncionario) {
+    await fetch(
+        `../../api/equipeFuncionarioApi.php?id_equipe=${selectedTeam}&id_funcionario=${idFuncionario}`,
+        {
+            method: "DELETE"
+        }
+    );
+
+    loadTeamMembers();
+    loadAvailableEmployees();
+}
+
 async function loadAvailableEmployees() {
     const res = await fetch(`../../api/funcionariosDisponiveis.php?id_equipe=${selectedTeam}`);
     const data = await res.json();
