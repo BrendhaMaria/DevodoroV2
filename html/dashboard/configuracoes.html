@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +38,7 @@
       <span>Modo escuro/Claro</span> <br><br>
       <button id="escuro">Alternar</button>
       <br><br>
-      <div class="settings">
+<div class="settings">
 
   <h2>Conta e Perfil</h2>
 
@@ -61,8 +61,93 @@
     <br>
     <button class="btn" id="saveProfile">Salvar</button>
   </div>
+
+<div class="card" style="margin-top:20px;">
+  <h2>Código da Empresa</h2>
+
+  <p>
+    Este código é usado pelos funcionários para se cadastrarem na sua empresa.
+  </p>
+
+  <div style="display:flex; gap:10px; align-items:center;">
+
+    <input 
+      type="password"
+      id="codigoEmpresa"
+      readonly
+      style="flex:1;"
+    >
+
+    <button 
+      class="btn"
+      id="mostrarCodigoBtn"
+      onclick="mostrarCodigo()"
+    >
+      Mostrar Código
+    </button>
+
+    <button class="btn" onclick="copiarCodigo()">
+      Copiar
+    </button>
+
+  </div>
 </div>
-    
+
+</div>    
+
+<script>
+
+async function carregarEmpresa() {
+    try {
+        const res = await fetch("../../api/empresa-info.php");
+        const data = await res.json();
+
+        if (data.error) {
+            console.log(data.error);
+            return;
+        }
+
+        document.getElementById("codigoEmpresa").value =
+            data.codigo_acesso;
+
+        document.getElementById("nameInput").value =
+            data.nome;
+
+        document.getElementById("emailInput").value =
+            data.email;
+
+    } catch (err) {
+        console.log("Erro ao carregar empresa", err);
+    }
+}
+
+function mostrarCodigo() {
+    const input = document.getElementById("codigoEmpresa");
+    const btn = document.getElementById("mostrarCodigoBtn");
+
+    if (input.type === "password") {
+        input.type = "text";
+        btn.textContent = "Ocultar Código";
+
+    } else {
+        input.type = "password";
+        btn.textContent = "Mostrar Código";
+    }
+}
+
+function copiarCodigo() {
+    const input = document.getElementById("codigoEmpresa");
+
+    input.select();
+    input.setSelectionRange(0, 99999);
+
+    navigator.clipboard.writeText(input.value);
+
+    alert("Código copiado");
+}
+
+carregarEmpresa();
+</script>
 
 <script src="../../js/modoescuro.js"></script>
 </body>
