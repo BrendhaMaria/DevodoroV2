@@ -93,8 +93,10 @@ CREATE TABLE `tarefas` (
   `titulo` varchar(200) NOT NULL,
   `prioridade` varchar(20) DEFAULT 'MEDIA',
   `estado` varchar(20) DEFAULT 'PENDENTE',
+  `prazo_entrega` DATE NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_empresa` int(11) NOT NULL
+  FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa);
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

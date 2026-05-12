@@ -6,7 +6,7 @@ session_start();
  * Lista tarefas da empresa logada
  */
 function listarTarefas($conn) {
-    $id_empresa = $_SESSION['id_empresa'];
+    $id_empresa = $_SESSION['id_empresa'] ?? 1;
 
     $stmt = $conn->prepare("SELECT * FROM tarefas WHERE id_empresa = ? ORDER BY id_tarefa DESC");
 
@@ -26,20 +26,60 @@ function listarTarefas($conn) {
 
 /**
  * Cria uma nova tarefa
- */
-function criarTarefa($conn, $titulo, $estado, $prioridade) {
-    $id_empresa = $_SESSION['id_empresa'];
+ */function criarTarefa($conn, $titulo, $status, $prioridade, $prazo_entrega) {
+
+    $id_empresa = $_SESSION['id_empresa'] ?? 1;
 
     if (empty($titulo)) {
-        return ["success" => false, "error" => "Título vazio"];
+        return [
+            "success" => false,
+            "error" => "Título vazio"
+        ];
     }
 
-    $stmt = $conn->prepare("INSERT INTO tarefas (titulo, estado, prioridade, id_empresa) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("sssi", $titulo, $estado, $prioridade, $id_empresa);
+    $sql = "
+        INSERT INTO tarefas
+        (
+            titulo,
+            status,
+            prioridade,
+            prazo_entrega,
+            id_empresa
+        )
+        VALUES (?, ?, ?, ?, ?)
+    ";
 
-    return ["success" => $stmt->execute()];
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        return [
+            "success" => false,
+            "error" => $conn->error
+        ];
+    }
+
+    $stmt->bind_param(
+        "ssssi",
+        $titulo,
+        $status,
+        $prioridade,
+        $prazo_entrega,
+        $id_empresa
+    );
+
+    $success = $stmt->execute();
+
+    if (!$success) {
+        return [
+            "success" => false,
+            "error" => $stmt->error
+        ];
+    }
+
+    return [
+        "success" => true
+    ];
 }
-
 /**
  * Remove tarefa por ID
  */
@@ -54,10 +94,10 @@ function deletarTarefa($conn, $id) {
 /**
  * Atualiza estado da tarefa
  */
-function atualizarStatus($conn, $id, $estado) {
-    $stmt = $conn->prepare("UPDATE tarefas SET estado = ? WHERE id_tarefa = ?");
+function atualizarStatus($conn, $id, $status) {
+    $stmt = $conn->prepare("UPDATE tarefas SET status = ? WHERE id_tarefa = ?");
     
-    $stmt->bind_param("si", $estado, $id);
+    $stmt->bind_param("si", $status, $id);
 
     return ["success" => $stmt->execute()];
 }

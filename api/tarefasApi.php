@@ -84,13 +84,14 @@ if ($method === "POST") {
     $titulo = $data["titulo"] ?? null;
     $estado = $data["estado"] ?? "PENDENTE";
     $prioridade = $data["prioridade"] ?? "MEDIA";
+    $prazo_entrega = $data["prazo_entrega"] ?? null;
 
     if (!$titulo) {
         errorResponse("Titulo da tarefa vazio");
     }
 
     try {
-        $resultado = criarTarefa($conn, $titulo, $estado, $prioridade);
+        $resultado = criarTarefa($conn, $titulo, $estado, $prioridade, $prazo_entrega);
         response($resultado);
     } catch (Exception $e) {
         errorResponse("Erro ao criar tarefa", $e->getMessage());

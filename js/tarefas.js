@@ -5,31 +5,60 @@ const API_URL = "../../api/tarefasApi.php";
 // CARREGAR TAREFAS
 // ==========================
 async function loadTasks() {
+
   const res = await fetch(API_URL);
+
   const tasks = await res.json();
 
-  renderTasks(tasks);
+  console.log(tasks);
+
+  // GARANTE ARRAY
+  const tasksArray = Array.isArray(tasks)
+    ? tasks
+    : [];
+
+  renderTasks(tasksArray);
+}
+function formatDate(date) {
+  if (!date) return "Sem prazo";
+
+  const d = new Date(date);
+
+  return d.toLocaleDateString("pt-BR");
 }
 function renderTasks(tasks) {
   const list = document.getElementById("taskList");
+
   list.innerHTML = "";
 
   tasks.forEach(task => {
+
     list.innerHTML += `
       <div class="task">
+
         <div>
           <strong>${task.titulo}</strong>
-          <p>Prazo: ${task.prazo_entrega || "Sem prazo"}</p>
+
+          <p>
+            Prazo:
+            ${formatDate(task.prazo_entrega)}
+          </p>
         </div>
 
         <span>
-          <span class="badge">${task.estado}</span>
-          <span class="badge">${task.prioridade}</span>
 
-          <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">
-            X
-          </button>
+          <span class="badge">
+            ${task.status}
+          </span>
+
+          <span class="badge">
+            ${task.prioridade}
+          </span>
+
+          <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">X</button>
+
         </span>
+
       </div>
     `;
   });
@@ -41,8 +70,9 @@ document.addEventListener("DOMContentLoaded", () => {
 // CRIAR TAREFA
 // ==========================
 async function addTask() {
+
   const input = document.getElementById("taskInput");
-  const estado = document.getElementById("estado");
+  const status = document.getElementById("status");
   const prioridade = document.getElementById("prioridade");
   const prazo = document.getElementById("prazo");
 
@@ -50,25 +80,44 @@ async function addTask() {
 
   if (!titulo) return;
 
-  await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      titulo,
-      estado: estado.value,
-      prioridade: prioridade.value,
-      prazo_entrega: prazo.value
-    })
-  });
+  try {
 
-  input.value = "";
-  prazo.value = "";
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        titulo,
+        status: status.value,
+        prioridade: prioridade.value,
+        prazo_entrega: prazo.value
+      })
+    });
 
-  closeModal();
-  loadTasks();
+    const data = await res.json();
+
+    console.log("RESPOSTA:", data);
+
+    if (!res.ok) {
+      alert(data.error || "Erro ao criar tarefa");
+      return;
+    }
+
+    input.value = "";
+    prazo.value = "";
+
+    closeModal();
+
+    loadTasks();
+
+  } catch (err) {
+
+    console.error(err);
+
+  }
 }
+
 // ==========================
 // DELETAR TAREFA
 // ==========================
