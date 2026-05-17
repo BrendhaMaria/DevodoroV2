@@ -48,7 +48,7 @@ function renderTasks(tasks) {
         <span>
 
           <span class="badge">
-            ${task.status}
+            ${task.estado}
           </span>
 
           <span class="badge">
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function addTask() {
 
   const input = document.getElementById("taskInput");
-  const status = document.getElementById("status");
+  const estado = document.getElementById("estado");
   const prioridade = document.getElementById("prioridade");
   const prazo = document.getElementById("prazo");
 
@@ -89,7 +89,7 @@ async function addTask() {
       },
       body: JSON.stringify({
         titulo,
-        status: status.value,
+        estado: estado.value,
         prioridade: prioridade.value,
         prazo_entrega: prazo.value
       })

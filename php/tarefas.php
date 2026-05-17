@@ -26,7 +26,8 @@ function listarTarefas($conn) {
 
 /**
  * Cria uma nova tarefa
- */function criarTarefa($conn, $titulo, $status, $prioridade, $prazo_entrega) {
+ */
+function criarTarefa($conn, $titulo, $estado, $prioridade, $prazo_entrega) {
 
     $id_empresa = $_SESSION['id_empresa'] ?? 1;
 
@@ -41,7 +42,7 @@ function listarTarefas($conn) {
         INSERT INTO tarefas
         (
             titulo,
-            status,
+            estado,
             prioridade,
             prazo_entrega,
             id_empresa
@@ -61,7 +62,7 @@ function listarTarefas($conn) {
     $stmt->bind_param(
         "ssssi",
         $titulo,
-        $status,
+        $estado,
         $prioridade,
         $prazo_entrega,
         $id_empresa
@@ -94,10 +95,10 @@ function deletarTarefa($conn, $id) {
 /**
  * Atualiza estado da tarefa
  */
-function atualizarStatus($conn, $id, $status) {
-    $stmt = $conn->prepare("UPDATE tarefas SET status = ? WHERE id_tarefa = ?");
+function atualizarEstado($conn, $id, $estado) {
+    $stmt = $conn->prepare("UPDATE tarefas SET estado = ? WHERE id_tarefa = ?");
     
-    $stmt->bind_param("si", $status, $id);
+    $stmt->bind_param("si", $estado, $id);
 
     return ["success" => $stmt->execute()];
 }

@@ -127,7 +127,7 @@ if ($method === "PUT") {
     }
 
     try {
-        $resultado = atualizarStatus($conn, $data["id_tarefa"], $data["estado"]);
+        $resultado = atualizarEstado($conn, $data["id_tarefa"], $data["estado"]);
         response($resultado);
     } catch (Exception $e) {
         errorResponse("Erro ao atualizar", $e->getMessage());

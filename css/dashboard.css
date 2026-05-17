@@ -171,7 +171,7 @@ body {
   background: var(--input);
   color: var(--text);
 }
-select#status,select#prioridade{
+select#estado,select#prioridade{
   background: linear-gradient(90deg, #ff0066, #00c6ff);
   color: white;
   padding: 7px;
