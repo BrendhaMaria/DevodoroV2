@@ -19,13 +19,17 @@
     </div>
   </div>
 
-  <div class="user">
-    <div class="avatar">B</div>
-    <div>
-      <strong>brendha</strong>
-      <p>Empresa</p>
+    <div class="user">
+
+      <div class="avatar sidebarAvatar"></div>
+
+      <div>
+        <strong class="sidebarNome"></strong>
+        <p>Empresa</p>
+      </div>
+
     </div>
-  </div>
+
 </div>
 
 <div class="main" id="app">
@@ -39,6 +43,7 @@
       <span>Modo escuro/Claro</span> <br><br>
       <button id="escuro">Alternar</button>
       <br><br>
+
 <div class="settings">
 
   <h2>Conta e Perfil</h2>
@@ -56,11 +61,36 @@
     </div>
 
     <div class="setting-item">
+
       <label>Avatar</label>
-      <input type="file" id="avatarInput">
+
+      <img
+        id="previewAvatar"
+        src="../../uploads/perfis/default.png"
+        width="100"
+        height="100"
+        style="
+          border-radius:50%;
+          object-fit:cover;
+          display:block;
+          margin-bottom:10px;
+        "
+      >
+
+      <input
+        type="file"
+        id="avatarInput"
+        accept=".png,.jpg,.jpeg"
+      >
+
     </div>
-    <br>
-    <button class="btn" id="saveProfile">Salvar</button>
+
+<br>
+
+<button class="btn" id="saveProfile">
+  Salvar
+</button>
+
   </div>
 
 <div class="card" style="margin-top:20px;">
@@ -150,6 +180,130 @@ function copiarCodigo() {
 carregarEmpresa();
 </script>
 
+<script>
+
+/* =========================
+   CARREGA PERFIL
+========================= */
+
+async function carregarPerfil() {
+
+    try {
+
+        const res =
+            await fetch("../../api/perfilApi.php");
+
+        const data = await res.json();
+
+        if (data.error) {
+            console.log(data.error);
+            return;
+        }
+
+        document.getElementById("nameInput").value =
+            data.nome || "";
+
+        document.getElementById("emailInput").value =
+            data.email || "";
+
+        const avatar =
+            document.getElementById("previewAvatar");
+
+        avatar.src = data.foto_perfil
+            ? "../../" + data.foto_perfil
+            : "../../uploads/perfis/default.png";
+
+    } catch (err) {
+
+        console.log(err);
+    }
+}
+
+/* =========================
+   PREVIEW IMAGEM
+========================= */
+
+document
+.getElementById("avatarInput")
+.addEventListener("change", function(e) {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+
+        document.getElementById(
+            "previewAvatar"
+        ).src = event.target.result;
+    };
+
+    reader.readAsDataURL(file);
+});
+
+/* =========================
+   SALVAR PERFIL
+========================= */
+
+document
+.getElementById("saveProfile")
+.addEventListener("click", async () => {
+
+    const nome =
+        document.getElementById("nameInput").value;
+
+    const foto =
+        document.getElementById("avatarInput").files[0];
+
+    const formData = new FormData();
+
+    formData.append("nome", nome);
+
+    if (foto) {
+        formData.append("foto", foto);
+    }
+
+    try {
+
+        const res = await fetch(
+            "../../api/perfilApi.php",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+        const data = await res.json();
+
+        if (data.error) {
+
+            alert(data.error);
+            return;
+        }
+
+        alert(data.message);
+
+        carregarPerfil();
+
+    } catch (err) {
+
+        console.log(err);
+
+        alert("Erro ao salvar perfil");
+    }
+});
+
+/* =========================
+   INIT
+========================= */
+
+carregarPerfil();
+
+</script>
+
+<script src="../../js/loadProfile.js"></script>
 <script src="../../js/modoescuro.js"></script>
 </body>
 </html>
