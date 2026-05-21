@@ -90,7 +90,7 @@ body {
 }
 
 .title {
-  font-size: 26px;
+  font-size:  22px;
   font-weight: 600;
 }
 
@@ -129,12 +129,13 @@ body {
   background: var(--card);
   padding: 20px;
   border-radius: 15px;
+  font-size: 12px;
   position: relative;
   box-shadow: var(--card2);
 }
 
 .card h2 {
-  font-size: 28px;
+  font-size: 20px;
   margin-top: 10px;
 }
 
@@ -252,6 +253,10 @@ option{
   display: flex;
   flex-direction: column;
   margin-top: 15px;
+}
+
+.setting-group{
+display: flex;
 }
 
 .setting-item input {
@@ -408,4 +413,18 @@ option{
 .btn-save {
   background: #6c63ff;
   color: white;
+}
+label.upload-btn{
+  display: inline-block;
+  padding: 10px 20px;
+  background: #6c63ff;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  transition: 0.3s;
+}
+
+label.upload-btn:hover{
+  background: #574bdb;
 }

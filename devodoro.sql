@@ -18,6 +18,7 @@ CREATE TABLE `empresa` (
   `nome` varchar(150) NOT NULL,
   `email` varchar(150) NOT NULL,
   `senha` varchar(255) NOT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
   `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `codigo_acesso` varchar(20) DEFAULT NULL,
 
@@ -98,6 +99,7 @@ CREATE TABLE `funcionario` (
   `nome` varchar(150) NOT NULL,
   `email` varchar(150) NOT NULL,
   `senha` varchar(255) NOT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
   `tipo_usuario` varchar(20) DEFAULT 'FUNCIONARIO',
   `ativo` tinyint(1) DEFAULT 1,
   `id_empresa` int DEFAULT NULL,
