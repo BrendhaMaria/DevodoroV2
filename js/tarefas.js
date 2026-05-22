@@ -1,88 +1,112 @@
-// URL da API (ajusta se necessário)
 const API_URL = "../../api/tarefasApi.php";
 
-// ==========================
-// CARREGAR TAREFAS
-// ==========================
-async function loadTasks() {
-
-  const res = await fetch(API_URL);
-
-  const tasks = await res.json();
-
-  console.log(tasks);
-
-  // GARANTE ARRAY
-  const tasksArray = Array.isArray(tasks)
-    ? tasks
-    : [];
-
-  renderTasks(tasksArray);
+function getTaskList() {
+  return document.getElementById("taskList");
 }
+
+function getJsonError(data, fallback) {
+  return data && data.error ? data.error : fallback;
+}
+
+async function requestJson(url, options = {}) {
+  const res = await fetch(url, options);
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(getJsonError(data, "Erro ao processar requisicao"));
+  }
+
+  return data;
+}
+
 function formatDate(date) {
   if (!date) return "Sem prazo";
 
-  const d = new Date(date);
+  const d = new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(d.getTime())) {
+    return "Sem prazo";
+  }
 
   return d.toLocaleDateString("pt-BR");
 }
+
+function createBadge(text) {
+  const badge = document.createElement("span");
+  badge.className = "badge";
+  badge.textContent = text;
+
+  return badge;
+}
+
+function createTaskElement(task) {
+  const item = document.createElement("div");
+  item.className = "task";
+
+  const content = document.createElement("div");
+
+  const title = document.createElement("strong");
+  title.textContent = task.titulo || "";
+
+  const deadline = document.createElement("p");
+  deadline.textContent = `Prazo: ${formatDate(task.prazo_entrega)}`;
+
+  content.appendChild(title);
+  content.appendChild(deadline);
+
+  const actions = document.createElement("span");
+  actions.appendChild(createBadge(task.estado || ""));
+  actions.appendChild(createBadge(task.prioridade || ""));
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "btn-x";
+  deleteButton.type = "button";
+  deleteButton.textContent = "X";
+  deleteButton.addEventListener("click", () => deleteTask(task.id_tarefa));
+
+  actions.appendChild(deleteButton);
+
+  item.appendChild(content);
+  item.appendChild(actions);
+
+  return item;
+}
+
 function renderTasks(tasks) {
-  const list = document.getElementById("taskList");
+  const list = getTaskList();
+
+  if (!list) return;
 
   list.innerHTML = "";
 
   tasks.forEach(task => {
-
-    list.innerHTML += `
-      <div class="task">
-
-        <div>
-          <strong>${task.titulo}</strong>
-
-          <p>
-            Prazo:
-            ${formatDate(task.prazo_entrega)}
-          </p>
-        </div>
-
-        <span>
-
-          <span class="badge">
-            ${task.estado}
-          </span>
-
-          <span class="badge">
-            ${task.prioridade}
-          </span>
-
-          <button class="btn-x" onclick="deleteTask(${task.id_tarefa})">X</button>
-
-        </span>
-
-      </div>
-    `;
+    list.appendChild(createTaskElement(task));
   });
 }
-document.addEventListener("DOMContentLoaded", () => {
-  loadTasks();
-});
-// ==========================
-// CRIAR TAREFA
-// ==========================
-async function addTask() {
 
+async function loadTasks() {
+  try {
+    const tasks = await requestJson(API_URL);
+    renderTasks(Array.isArray(tasks) ? tasks : []);
+  } catch (err) {
+    console.error(err);
+    renderTasks([]);
+    alert(err.message);
+  }
+}
+
+async function addTask() {
   const input = document.getElementById("taskInput");
   const estado = document.getElementById("estado");
   const prioridade = document.getElementById("prioridade");
   const prazo = document.getElementById("prazo");
 
-  const titulo = input.value;
+  const titulo = input.value.trim();
 
   if (!titulo) return;
 
   try {
-
-    const res = await fetch(API_URL, {
+    await requestJson(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -95,59 +119,40 @@ async function addTask() {
       })
     });
 
-    const data = await res.json();
-
-    console.log("RESPOSTA:", data);
-
-    if (!res.ok) {
-      alert(data.error || "Erro ao criar tarefa");
-      return;
-    }
-
     input.value = "";
     prazo.value = "";
 
     closeModal();
-
     loadTasks();
-
   } catch (err) {
-
     console.error(err);
-
+    alert(err.message);
   }
 }
 
-// ==========================
-// DELETAR TAREFA
-// ==========================
 async function deleteTask(id) {
-  await fetch(API_URL, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ id_tarefa: id })
-  });
+  try {
+    await requestJson(API_URL, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id_tarefa: id })
+    });
 
-  loadTasks();
+    loadTasks();
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
 }
 
-// ==========================
-// INICIAR
-// ==========================
-loadTasks();
-// ==========================
-// ABRIR MODAL
-// ==========================
 function openModal() {
   document.getElementById("taskModal").classList.add("active");
 }
 
-// ==========================
-// FECHAR MODAL
-// ==========================
 function closeModal() {
   document.getElementById("taskModal").classList.remove("active");
 }
 
+document.addEventListener("DOMContentLoaded", loadTasks);

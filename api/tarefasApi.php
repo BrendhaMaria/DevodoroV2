@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
 header("Content-Type: application/json");
 
@@ -12,8 +12,18 @@ $auth = requireAuth();
 $id_empresa = $auth["id_empresa"];
 $method = $_SERVER["REQUEST_METHOD"];
 
+function responseFromResult($resultado, $successStatus = 200, $errorStatus = 400) {
+    $success = $resultado["success"] ?? false;
+    apiResponse($resultado, $success ? $successStatus : $errorStatus);
+}
+
 if ($method === "GET") {
     $tarefas = listarTarefas($conn, $id_empresa);
+
+    if (isset($tarefas["success"]) && $tarefas["success"] === false) {
+        apiResponse($tarefas, 500);
+    }
+
     apiResponse($tarefas);
 }
 
@@ -41,7 +51,7 @@ if ($method === "POST") {
         $prazo_entrega
     );
 
-    apiResponse($resultado, ($resultado["success"] ?? false) ? 201 : 400);
+    responseFromResult($resultado, 201, 400);
 }
 
 if ($method === "DELETE") {
@@ -56,7 +66,7 @@ if ($method === "DELETE") {
     }
 
     $resultado = deletarTarefa($conn, $id_empresa, (int) $id_tarefa);
-    apiResponse($resultado, ($resultado["success"] ?? false) ? 200 : 404);
+    responseFromResult($resultado, 200, 404);
 }
 
 if ($method === "PUT") {
@@ -72,7 +82,8 @@ if ($method === "PUT") {
     }
 
     $resultado = atualizarEstado($conn, $id_empresa, (int) $id_tarefa, $estado);
-    apiResponse($resultado, ($resultado["success"] ?? false) ? 200 : 404);
+    $status = isset($resultado["error"]) ? 400 : 404;
+    responseFromResult($resultado, 200, $status);
 }
 
 apiResponse([

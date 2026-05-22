@@ -1,6 +1,20 @@
 <?php
 require_once "conexao.php";
 
+function tarefaIdValido($id_tarefa) {
+    return is_int($id_tarefa) && $id_tarefa > 0;
+}
+
+function prazoValido($prazo_entrega) {
+    if ($prazo_entrega === null || $prazo_entrega === "") {
+        return true;
+    }
+
+    $data = DateTime::createFromFormat("Y-m-d", $prazo_entrega);
+
+    return $data && $data->format("Y-m-d") === $prazo_entrega;
+}
+
 function listarTarefas($conn, $id_empresa) {
     $stmt = $conn->prepare("
         SELECT *
@@ -48,6 +62,10 @@ function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_e
         $prazo_entrega = null;
     }
 
+    if (!prazoValido($prazo_entrega)) {
+        return ["success" => false, "error" => "Prazo invalido"];
+    }
+
     $stmt = $conn->prepare("
         INSERT INTO tarefas (
             titulo,
@@ -83,6 +101,10 @@ function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_e
 }
 
 function deletarTarefa($conn, $id_empresa, $id_tarefa) {
+    if (!tarefaIdValido($id_tarefa)) {
+        return ["success" => false, "error" => "ID da tarefa invalido"];
+    }
+
     $stmt = $conn->prepare("
         DELETE FROM tarefas
         WHERE id_tarefa = ? AND id_empresa = ?
@@ -105,6 +127,10 @@ function deletarTarefa($conn, $id_empresa, $id_tarefa) {
 }
 
 function atualizarEstado($conn, $id_empresa, $id_tarefa, $estado) {
+    if (!tarefaIdValido($id_tarefa)) {
+        return ["success" => false, "error" => "ID da tarefa invalido"];
+    }
+
     $estadosPermitidos = ["PENDENTE", "EM_ANDAMENTO", "CONCLUIDA"];
 
     if (!in_array($estado, $estadosPermitidos, true)) {
