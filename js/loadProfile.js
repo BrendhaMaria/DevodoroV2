@@ -3,11 +3,23 @@ async function carregarPerfilSidebar() {
     try {
 
         const res =
-            await fetch("../../api/perfilApi.php");
+            await fetch("../../api/perfilApi.php", {
+                cache: "no-store"
+            });
+
+        if (res.status === 401 || res.status === 403) {
+            window.location.replace("../cadastrologin.html");
+            return;
+        }
 
         const data = await res.json();
 
         if (data.error) {
+            if (data.error.toLowerCase().includes("autenticado")) {
+                window.location.replace("../cadastrologin.html");
+                return;
+            }
+
             console.log(data.error);
             return;
         }

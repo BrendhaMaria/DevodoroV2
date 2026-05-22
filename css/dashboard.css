@@ -65,6 +65,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .avatar {
@@ -409,4 +410,25 @@ option{
 .btn-save {
   background: #6c63ff;
   color: white;
+}
+
+.logout-form {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.logout-btn:hover {
+  background: var(--side-bg);
+  color: var(--text);
 }
