@@ -1,16 +1,11 @@
 <?php
-include '../php/conexao.php';
-session_start();
-
 header("Content-Type: application/json");
 
-$id_empresa = $_SESSION['id_empresa'] ?? null;
-$tipo = $_SESSION['tipo'] ?? null;
+require_once "../php/conexao.php";
+require_once "../php/auth.php";
 
-if (!$id_empresa || $tipo !== "empresa") {
-    echo json_encode(["error" => "não autorizado"]);
-    exit;
-}
+$auth = requireEmpresa();
+$id_empresa = $auth["id_empresa"];
 
 $stmt = $conn->prepare("
     SELECT nome, email, codigo_acesso
@@ -18,9 +13,19 @@ $stmt = $conn->prepare("
     WHERE id_empresa = ?
 ");
 
+if (!$stmt) {
+    apiResponse(["success" => false, "error" => $conn->error], 500);
+}
+
 $stmt->bind_param("i", $id_empresa);
 $stmt->execute();
 
 $result = $stmt->get_result();
+$empresa = $result->fetch_assoc();
 
-echo json_encode($result->fetch_assoc());
+if (!$empresa) {
+    apiResponse(["success" => false, "error" => "Empresa nao encontrada"], 404);
+}
+
+apiResponse($empresa);
+?>

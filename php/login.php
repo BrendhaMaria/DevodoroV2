@@ -1,103 +1,83 @@
 <?php
-session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include "conexao.php";
+session_set_cookie_params([
+    "lifetime" => 0,
+    "path" => "/",
+    "httponly" => true,
+    "samesite" => "Lax",
+    "secure" => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
+]);
 
-$email = $_POST['email'] ?? null;
-$senha = $_POST['senha'] ?? null;
-$tipo  = $_POST['tipo'] ?? null;
+session_start();
 
-/* =========================
-   VALIDAÇÃO
-========================= */
+require_once "conexao.php";
 
-if (!$email || !$senha || !$tipo) {
+$email = trim($_POST['email'] ?? '');
+$senha = $_POST['senha'] ?? '';
+$tipo = $_POST['tipo'] ?? '';
+
+if ($email === '' || $senha === '' || $tipo === '') {
     die("Dados incompletos");
 }
 
-/* =========================
-   EMPRESA
-========================= */
+if (!in_array($tipo, ["empresa", "funcionario"], true)) {
+    die("Tipo de usuario invalido");
+}
 
 if ($tipo === "empresa") {
-
-    $sql = "SELECT id_empresa, nome, senha FROM empresa WHERE email = ?";
-    $stmt = $conn->prepare($sql);
-
-    if (!$stmt) die("Erro SQL: " . $conn->error);
-
-    $stmt->bind_param("s", $email);
+    $stmt = $conn->prepare("
+        SELECT id_empresa, nome, senha
+        FROM empresa
+        WHERE email = ?
+        LIMIT 1
+    ");
+} else {
+    $stmt = $conn->prepare("
+        SELECT id_funcionario, nome, senha, id_empresa
+        FROM funcionario
+        WHERE email = ? AND ativo = 1
+        LIMIT 1
+    ");
 }
 
-/* =========================
-   FUNCIONÁRIO
-========================= */
-
-else {
-
-    $sql = "SELECT id_funcionario, nome, senha, id_empresa 
-            FROM funcionario 
-            WHERE email = ?";
-
-    $stmt = $conn->prepare($sql);
-
-    if (!$stmt) die("Erro SQL: " . $conn->error);
-
-    $stmt->bind_param("s", $email);
+if (!$stmt) {
+    die("Erro SQL: " . $conn->error);
 }
 
+$stmt->bind_param("s", $email);
 $stmt->execute();
+
 $result = $stmt->get_result();
 
-/* =========================
-   USUÁRIO EXISTE?
-========================= */
-
 if ($result->num_rows !== 1) {
-    die("Usuário não encontrado");
+    die("Usuario nao encontrado");
 }
 
 $user = $result->fetch_assoc();
-
-/* =========================
-   VERIFICA SENHA
-========================= */
 
 if (!password_verify($senha, $user['senha'])) {
     die("Senha incorreta");
 }
 
-/* =========================
-   SESSÃO
-========================= */
+if ($tipo === "funcionario" && empty($user['id_empresa'])) {
+    die("Funcionario sem empresa vinculada");
+}
+
+session_regenerate_id(true);
+$_SESSION = [];
 
 $_SESSION['tipo'] = $tipo;
 $_SESSION['nome'] = $user['nome'];
 
-/* =========================
-   DIFERENCIAÇÃO
-========================= */
-
 if ($tipo === "empresa") {
-
-    $_SESSION['id_empresa'] = $user['id_empresa'];
-
+    $_SESSION['id_empresa'] = (int) $user['id_empresa'];
 } else {
-
-    $_SESSION['id_funcionario'] = $user['id_funcionario'];
-    $_SESSION['id_empresa']     = $user['id_empresa'];
-
-    // proteção básica (não deveria acontecer, mas evita bug)
-    if (!$user['id_empresa']) {
-        die("Funcionário sem empresa vinculada");
-    }
+    $_SESSION['id_funcionario'] = (int) $user['id_funcionario'];
+    $_SESSION['id_empresa'] = (int) $user['id_empresa'];
 }
-
-/* =========================
-   REDIRECIONAMENTO
-========================= */
 
 header("Location: ../html/dashboard/dashboard.html");
 exit;
+?>

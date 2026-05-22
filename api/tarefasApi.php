@@ -1,144 +1,83 @@
 <?php
-// ==========================
-// DEBUG ATIVADO
-// ==========================
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 header("Content-Type: application/json");
 
-// Função padrão de resposta
-function response($data, $estado = 200) {
-    http_response_code($estado);
-    echo json_encode($data);
-    exit;
-}
-
-// Função de erro padrão
-function errorResponse($message, $extra = []) {
-    response([
-        "success" => false,
-        "error" => $message,
-        "debug" => $extra
-    ], 500);
-}
-
-// ==========================
-// TESTE DE CARREGAMENTO
-// ==========================
-if (!file_exists("../php/conexao.php")) {
-    errorResponse("conexao.php não encontrado");
-}
-
-if (!file_exists("../php/tarefas.php")) {
-    errorResponse("tarefas.php não encontrado");
-}
-
 require_once "../php/conexao.php";
+require_once "../php/auth.php";
 require_once "../php/tarefas.php";
 
-// ==========================
-// TESTE DE CONEXÃO
-// ==========================
-if (!isset($conn)) {
-    errorResponse("Conexão não definida");
-}
-
-if ($conn->connect_error) {
-    errorResponse("Erro no banco", $conn->connect_error);
-}
-
-// ==========================
-// MÉTODO
-// ==========================
+$auth = requireAuth();
+$id_empresa = $auth["id_empresa"];
 $method = $_SERVER["REQUEST_METHOD"];
 
-// ==========================
-// LISTAR (GET)
-// ==========================
 if ($method === "GET") {
-    try {
-        $tarefas = listarTarefas($conn);
-        response($tarefas);
-    } catch (Exception $e) {
-        errorResponse("Erro ao listar tarefas", $e->getMessage());
-    }
+    $tarefas = listarTarefas($conn, $id_empresa);
+    apiResponse($tarefas);
 }
 
-// ==========================
-// CRIAR (POST)
-// ==========================
 if ($method === "POST") {
-    $raw = file_get_contents("php://input");
-
-    if (!$raw) {
-        errorResponse("Body vazio");
-    }
-
-    $data = json_decode($raw, true);
+    $data = readJsonInput();
 
     if (!$data) {
-        errorResponse("JSON inválido", $raw);
+        apiResponse([
+            "success" => false,
+            "error" => "JSON invalido ou vazio"
+        ], 400);
     }
 
-    $titulo = $data["titulo"] ?? null;
+    $titulo = $data["titulo"] ?? "";
     $estado = $data["estado"] ?? "PENDENTE";
     $prioridade = $data["prioridade"] ?? "MEDIA";
     $prazo_entrega = $data["prazo_entrega"] ?? null;
 
-    if (!$titulo) {
-        errorResponse("Titulo da tarefa vazio");
-    }
+    $resultado = criarTarefa(
+        $conn,
+        $id_empresa,
+        $titulo,
+        $estado,
+        $prioridade,
+        $prazo_entrega
+    );
 
-    try {
-        $resultado = criarTarefa($conn, $titulo, $estado, $prioridade, $prazo_entrega);
-        response($resultado);
-    } catch (Exception $e) {
-        errorResponse("Erro ao criar tarefa", $e->getMessage());
-    }
+    apiResponse($resultado, ($resultado["success"] ?? false) ? 201 : 400);
 }
 
-// ==========================
-// DELETE
-// ==========================
 if ($method === "DELETE") {
-    $data = json_decode(file_get_contents("php://input"), true);
+    $data = readJsonInput();
+    $id_tarefa = $data["id_tarefa"] ?? null;
 
-    if (!$data || !isset($data["id_tarefa"])) {
-        errorResponse("ID não enviado");
+    if (!$id_tarefa || !is_numeric($id_tarefa)) {
+        apiResponse([
+            "success" => false,
+            "error" => "ID da tarefa invalido"
+        ], 400);
     }
 
-    try {
-        $resultado = deletarTarefa($conn, $data["id_tarefa"]);
-        response($resultado);
-    } catch (Exception $e) {
-        errorResponse("Erro ao deletar", $e->getMessage());
-    }
+    $resultado = deletarTarefa($conn, $id_empresa, (int) $id_tarefa);
+    apiResponse($resultado, ($resultado["success"] ?? false) ? 200 : 404);
 }
 
-// ==========================
-// PUT
-// ==========================
 if ($method === "PUT") {
-    $data = json_decode(file_get_contents("php://input"), true);
+    $data = readJsonInput();
+    $id_tarefa = $data["id_tarefa"] ?? null;
+    $estado = $data["estado"] ?? null;
 
-    if (!$data || !isset($data["id_tarefa"]) || !isset($data["estado"])) {
-        errorResponse("Dados incompletos");
+    if (!$id_tarefa || !is_numeric($id_tarefa) || !$estado) {
+        apiResponse([
+            "success" => false,
+            "error" => "Dados incompletos"
+        ], 400);
     }
 
-    try {
-        $resultado = atualizarEstado($conn, $data["id_tarefa"], $data["estado"]);
-        response($resultado);
-    } catch (Exception $e) {
-        errorResponse("Erro ao atualizar", $e->getMessage());
-    }
+    $resultado = atualizarEstado($conn, $id_empresa, (int) $id_tarefa, $estado);
+    apiResponse($resultado, ($resultado["success"] ?? false) ? 200 : 404);
 }
 
-// ==========================
-// MÉTODO NÃO SUPORTADO
-// ==========================
-response([
+apiResponse([
     "success" => false,
-    "error" => "Método não suportado",
+    "error" => "Metodo nao suportado",
     "method" => $method
 ], 405);
+?>

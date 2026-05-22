@@ -1,20 +1,22 @@
 <?php
 require_once "conexao.php";
-session_start();
 
-/**
- * Lista tarefas da empresa logada
- */
-function listarTarefas($conn) {
-    $id_empresa = $_SESSION['id_empresa'] ?? 1;
+function listarTarefas($conn, $id_empresa) {
+    $stmt = $conn->prepare("
+        SELECT *
+        FROM tarefas
+        WHERE id_empresa = ?
+        ORDER BY id_tarefa DESC
+    ");
 
-    $stmt = $conn->prepare("SELECT * FROM tarefas WHERE id_empresa = ? ORDER BY id_tarefa DESC");
+    if (!$stmt) {
+        return ["success" => false, "error" => $conn->error];
+    }
 
     $stmt->bind_param("i", $id_empresa);
     $stmt->execute();
 
     $result = $stmt->get_result();
-
     $tarefas = [];
 
     while ($row = $result->fetch_assoc()) {
@@ -24,23 +26,30 @@ function listarTarefas($conn) {
     return $tarefas;
 }
 
-/**
- * Cria uma nova tarefa
- */
-function criarTarefa($conn, $titulo, $estado, $prioridade, $prazo_entrega) {
+function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_entrega) {
+    $titulo = trim((string) $titulo);
 
-    $id_empresa = $_SESSION['id_empresa'] ?? 1;
-
-    if (empty($titulo)) {
-        return [
-            "success" => false,
-            "error" => "Título vazio"
-        ];
+    if ($titulo === "") {
+        return ["success" => false, "error" => "Titulo vazio"];
     }
 
-    $sql = "
-        INSERT INTO tarefas
-        (
+    $estadosPermitidos = ["PENDENTE", "EM_ANDAMENTO", "CONCLUIDA"];
+    $prioridadesPermitidas = ["BAIXA", "MEDIA", "ALTA"];
+
+    if (!in_array($estado, $estadosPermitidos, true)) {
+        return ["success" => false, "error" => "Estado invalido"];
+    }
+
+    if (!in_array($prioridade, $prioridadesPermitidas, true)) {
+        return ["success" => false, "error" => "Prioridade invalida"];
+    }
+
+    if ($prazo_entrega === "") {
+        $prazo_entrega = null;
+    }
+
+    $stmt = $conn->prepare("
+        INSERT INTO tarefas (
             titulo,
             estado,
             prioridade,
@@ -48,15 +57,10 @@ function criarTarefa($conn, $titulo, $estado, $prioridade, $prazo_entrega) {
             id_empresa
         )
         VALUES (?, ?, ?, ?, ?)
-    ";
-
-    $stmt = $conn->prepare($sql);
+    ");
 
     if (!$stmt) {
-        return [
-            "success" => false,
-            "error" => $conn->error
-        ];
+        return ["success" => false, "error" => $conn->error];
     }
 
     $stmt->bind_param(
@@ -68,38 +72,86 @@ function criarTarefa($conn, $titulo, $estado, $prioridade, $prazo_entrega) {
         $id_empresa
     );
 
-    $success = $stmt->execute();
-
-    if (!$success) {
-        return [
-            "success" => false,
-            "error" => $stmt->error
-        ];
+    if (!$stmt->execute()) {
+        return ["success" => false, "error" => $stmt->error];
     }
 
     return [
-        "success" => true
+        "success" => true,
+        "id_tarefa" => $conn->insert_id
     ];
 }
-/**
- * Remove tarefa por ID
- */
-function deletarTarefa($conn, $id) {
-    $stmt = $conn->prepare("DELETE FROM tarefas WHERE id_tarefa = ?");
-    
-    $stmt->bind_param("i", $id);
 
-    return ["success" => $stmt->execute()];
+function deletarTarefa($conn, $id_empresa, $id_tarefa) {
+    $stmt = $conn->prepare("
+        DELETE FROM tarefas
+        WHERE id_tarefa = ? AND id_empresa = ?
+    ");
+
+    if (!$stmt) {
+        return ["success" => false, "error" => $conn->error];
+    }
+
+    $stmt->bind_param("ii", $id_tarefa, $id_empresa);
+
+    if (!$stmt->execute()) {
+        return ["success" => false, "error" => $stmt->error];
+    }
+
+    return [
+        "success" => $stmt->affected_rows > 0,
+        "affected_rows" => $stmt->affected_rows
+    ];
 }
 
-/**
- * Atualiza estado da tarefa
- */
-function atualizarEstado($conn, $id, $estado) {
-    $stmt = $conn->prepare("UPDATE tarefas SET estado = ? WHERE id_tarefa = ?");
-    
-    $stmt->bind_param("si", $estado, $id);
+function atualizarEstado($conn, $id_empresa, $id_tarefa, $estado) {
+    $estadosPermitidos = ["PENDENTE", "EM_ANDAMENTO", "CONCLUIDA"];
 
-    return ["success" => $stmt->execute()];
+    if (!in_array($estado, $estadosPermitidos, true)) {
+        return ["success" => false, "error" => "Estado invalido"];
+    }
+
+    $stmt = $conn->prepare("
+        UPDATE tarefas
+        SET estado = ?
+        WHERE id_tarefa = ? AND id_empresa = ?
+    ");
+
+    if (!$stmt) {
+        return ["success" => false, "error" => $conn->error];
+    }
+
+    $stmt->bind_param("sii", $estado, $id_tarefa, $id_empresa);
+
+    if (!$stmt->execute()) {
+        return ["success" => false, "error" => $stmt->error];
+    }
+
+    if ($stmt->affected_rows === 0) {
+        $check = $conn->prepare("
+            SELECT id_tarefa
+            FROM tarefas
+            WHERE id_tarefa = ? AND id_empresa = ?
+        ");
+
+        if (!$check) {
+            return ["success" => false, "error" => $conn->error];
+        }
+
+        $check->bind_param("ii", $id_tarefa, $id_empresa);
+        $check->execute();
+
+        if ($check->get_result()->num_rows !== 1) {
+            return [
+                "success" => false,
+                "affected_rows" => 0
+            ];
+        }
+    }
+
+    return [
+        "success" => true,
+        "affected_rows" => $stmt->affected_rows
+    ];
 }
 ?>

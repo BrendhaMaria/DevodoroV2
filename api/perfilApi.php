@@ -1,135 +1,66 @@
 <?php
-
-session_start();
-
 header("Content-Type: application/json");
 
-include "../php/conexao.php";
+require_once "../php/conexao.php";
+require_once "../php/auth.php";
 
-/* =========================
-   VERIFICA LOGIN
-========================= */
+$auth = requireAuth();
 
-if (!isset($_SESSION['tipo'])) {
-
-    echo json_encode([
-        "error" => "Usuário não autenticado"
-    ]);
-
-    exit;
-}
-
-$tipo = $_SESSION['tipo'];
-
-/* =========================
-   DEFINE TABELA
-========================= */
-
-if ($tipo === "empresa") {
-
+if ($auth["tipo"] === "empresa") {
     $tabela = "empresa";
     $campoId = "id_empresa";
-    $id = $_SESSION['id_empresa'];
-
+    $id = $auth["id_empresa"];
 } else {
-
     $tabela = "funcionario";
     $campoId = "id_funcionario";
-    $id = $_SESSION['id_funcionario'];
+    $id = $auth["id_funcionario"];
 }
 
-/* =========================
-   GET → BUSCAR PERFIL
-========================= */
-
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-
-    $sql = "
-        SELECT
-            nome,
-            email,
-            foto_perfil
+    $stmt = $conn->prepare("
+        SELECT nome, email, foto_perfil
         FROM $tabela
         WHERE $campoId = ?
-    ";
-
-    $stmt = $conn->prepare($sql);
+    ");
 
     if (!$stmt) {
-        die(json_encode([
-            "error" => $conn->error
-        ]));
+        apiResponse(["success" => false, "error" => $conn->error], 500);
     }
 
     $stmt->bind_param("i", $id);
-
     $stmt->execute();
 
-    $result = $stmt->get_result();
+    $usuario = $stmt->get_result()->fetch_assoc();
 
-    $usuario = $result->fetch_assoc();
+    if (!$usuario) {
+        apiResponse(["success" => false, "error" => "Usuario nao encontrado"], 404);
+    }
 
-    echo json_encode($usuario);
-
-    exit;
+    apiResponse($usuario);
 }
 
-/* =========================
-   POST → ATUALIZAR PERFIL
-========================= */
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $nome = trim($_POST['nome'] ?? '');
 
-    if (!$nome) {
-
-        echo json_encode([
-            "error" => "Nome obrigatório"
-        ]);
-
-        exit;
+    if ($nome === '') {
+        apiResponse(["success" => false, "error" => "Nome obrigatorio"], 400);
     }
 
     $caminhoImagem = null;
 
-    /* =========================
-       UPLOAD FOTO
-    ========================= */
-
-    if (
-        isset($_FILES['foto']) &&
-        $_FILES['foto']['error'] === 0
-    ) {
-
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
         $arquivo = $_FILES['foto'];
-
-        /* =========================
-        LIMITE DE TAMANHO
-        ========================= */
-
         $maxSize = 5 * 1024 * 1024;
 
         if ($arquivo["size"] > $maxSize) {
-
-            echo json_encode([
-                "error" => "Imagem muito grande. Máximo 5MB."
-            ]);
-
-            exit;
+            apiResponse([
+                "success" => false,
+                "error" => "Imagem muito grande. Maximo 5MB."
+            ], 400);
         }
 
-        /* =========================
-        MIME TYPE REAL
-        ========================= */
-
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
-
-        $mime = finfo_file(
-            $finfo,
-            $arquivo["tmp_name"]
-        );
-
+        $mime = finfo_file($finfo, $arquivo["tmp_name"]);
         finfo_close($finfo);
 
         $mimesPermitidos = [
@@ -138,185 +69,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         if (!isset($mimesPermitidos[$mime])) {
-
-            echo json_encode([
-                "error" => "Formato inválido."
-            ]);
-
-            exit;
+            apiResponse([
+                "success" => false,
+                "error" => "Formato invalido."
+            ], 400);
         }
 
-        /* =========================
-        VERIFICA IMAGEM REAL
-        ========================= */
-
-        $imageInfo = getimagesize(
-            $arquivo["tmp_name"]
-        );
-
-        if ($imageInfo === false) {
-
-            echo json_encode([
-                "error" => "Arquivo inválido."
-            ]);
-
-            exit;
+        if (getimagesize($arquivo["tmp_name"]) === false) {
+            apiResponse([
+                "success" => false,
+                "error" => "Arquivo invalido."
+            ], 400);
         }
-
-        /* =========================
-        NOME ÚNICO SEGURO
-        ========================= */
 
         $ext = $mimesPermitidos[$mime];
-
-        $nomeArquivo =
-            bin2hex(random_bytes(16))
-            . "."
-            . $ext;
-
+        $nomeArquivo = bin2hex(random_bytes(16)) . "." . $ext;
         $diretorio = "../uploads/perfis/";
 
         if (!is_dir($diretorio)) {
-
-            mkdir($diretorio, 0777, true);
+            mkdir($diretorio, 0755, true);
         }
 
         $destino = $diretorio . $nomeArquivo;
 
-        /* =========================
-        BUSCA FOTO ANTIGA
-        ========================= */
-
-        $sqlFoto = "
+        $stmtFoto = $conn->prepare("
             SELECT foto_perfil
             FROM $tabela
             WHERE $campoId = ?
-        ";
+        ");
 
-        $stmtFoto = $conn->prepare($sqlFoto);
-
-        $stmtFoto->bind_param("i", $id);
-
-        $stmtFoto->execute();
-
-        $resultFoto = $stmtFoto->get_result();
-
-        $usuarioAtual = $resultFoto->fetch_assoc();
-
-        $fotoAntiga =
-            $usuarioAtual['foto_perfil'] ?? null;
-
-        /* =========================
-        MOVE ARQUIVO
-        ========================= */
-
-        if (!move_uploaded_file(
-            $arquivo["tmp_name"],
-            $destino
-        )) {
-
-            echo json_encode([
-                "error" => "Erro ao salvar imagem."
-            ]);
-
-            exit;
+        if (!$stmtFoto) {
+            apiResponse(["success" => false, "error" => $conn->error], 500);
         }
 
-        /* =========================
-        REMOVE FOTO ANTIGA
-        ========================= */
+        $stmtFoto->bind_param("i", $id);
+        $stmtFoto->execute();
+
+        $usuarioAtual = $stmtFoto->get_result()->fetch_assoc();
+        $fotoAntiga = $usuarioAtual['foto_perfil'] ?? null;
+
+        if (!move_uploaded_file($arquivo["tmp_name"], $destino)) {
+            apiResponse([
+                "success" => false,
+                "error" => "Erro ao salvar imagem."
+            ], 500);
+        }
 
         if (
             $fotoAntiga &&
             $fotoAntiga !== "uploads/perfis/default.png" &&
             file_exists("../" . $fotoAntiga)
         ) {
-
             unlink("../" . $fotoAntiga);
         }
 
-        $caminhoImagem =
-            "uploads/perfis/" . $nomeArquivo;
+        $caminhoImagem = "uploads/perfis/" . $nomeArquivo;
     }
-
-    /* =========================
-       UPDATE COM FOTO
-    ========================= */
 
     if ($caminhoImagem) {
-
-        $sql = "
+        $stmt = $conn->prepare("
             UPDATE $tabela
-            SET
-                nome = ?,
-                foto_perfil = ?
+            SET nome = ?, foto_perfil = ?
             WHERE $campoId = ?
-        ";
-
-        $stmt = $conn->prepare($sql);
+        ");
 
         if (!$stmt) {
-            die(json_encode([
-                "error" => $conn->error
-            ]));
+            apiResponse(["success" => false, "error" => $conn->error], 500);
         }
 
-        $stmt->bind_param(
-            "ssi",
-            $nome,
-            $caminhoImagem,
-            $id
-        );
-
-    }
-
-    /* =========================
-       UPDATE SEM FOTO
-    ========================= */
-
-    else {
-
-        $sql = "
+        $stmt->bind_param("ssi", $nome, $caminhoImagem, $id);
+    } else {
+        $stmt = $conn->prepare("
             UPDATE $tabela
             SET nome = ?
             WHERE $campoId = ?
-        ";
-
-        $stmt = $conn->prepare($sql);
+        ");
 
         if (!$stmt) {
-            die(json_encode([
-                "error" => $conn->error
-            ]));
+            apiResponse(["success" => false, "error" => $conn->error], 500);
         }
 
-        $stmt->bind_param(
-            "si",
-            $nome,
-            $id
-        );
+        $stmt->bind_param("si", $nome, $id);
     }
 
-    $stmt->execute();
-
-    /* =========================
-       ATUALIZA SESSÃO
-    ========================= */
+    if (!$stmt->execute()) {
+        apiResponse(["success" => false, "error" => $stmt->error], 500);
+    }
 
     $_SESSION['nome'] = $nome;
 
-    echo json_encode([
+    apiResponse([
         "success" => true,
         "message" => "Perfil atualizado"
     ]);
-
-    exit;
 }
 
-/* =========================
-   MÉTODO INVÁLIDO
-========================= */
-
-echo json_encode([
-    "error" => "Método inválido"
-]);
+apiResponse([
+    "success" => false,
+    "error" => "Metodo invalido"
+], 405);
+?>

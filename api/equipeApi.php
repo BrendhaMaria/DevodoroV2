@@ -1,50 +1,41 @@
 <?php
-include '../php/conexao.php';
-session_start();
-
 header("Content-Type: application/json");
 
-$id_empresa = $_SESSION['id_empresa'];
+require_once "../php/conexao.php";
+require_once "../php/auth.php";
 
-if (!$id_empresa) {
-    echo json_encode(["error" => "não autenticado"]);
-    exit;
-}
-
+$auth = requireAuth();
+$id_empresa = $auth["id_empresa"];
 $method = $_SERVER['REQUEST_METHOD'];
 
-/* =====================================================
-   LISTAR EQUIPES
-===================================================== */
 if ($method === "GET") {
-
     $stmt = $conn->prepare("
         SELECT id, nome
         FROM equipe
         WHERE id_empresa = ?
+        ORDER BY nome
     ");
+
+    if (!$stmt) {
+        apiResponse(["success" => false, "error" => $conn->error], 500);
+    }
 
     $stmt->bind_param("i", $id_empresa);
     $stmt->execute();
 
     $result = $stmt->get_result();
-
-    echo json_encode($result->fetch_all(MYSQLI_ASSOC));
-    exit;
+    apiResponse($result->fetch_all(MYSQLI_ASSOC));
 }
 
-/* =====================================================
-   CRIAR EQUIPE
-===================================================== */
 if ($method === "POST") {
+    $data = readJsonInput();
+    $nome = trim((string) ($data["nome"] ?? ""));
 
-    $data = json_decode(file_get_contents("php://input"), true);
-
-    $nome = $data["nome"] ?? null;
-
-    if (!$nome) {
-        echo json_encode(["error" => "nome obrigatório"]);
-        exit;
+    if ($nome === "") {
+        apiResponse([
+            "success" => false,
+            "error" => "Nome obrigatorio"
+        ], 400);
     }
 
     $stmt = $conn->prepare("
@@ -52,23 +43,30 @@ if ($method === "POST") {
         VALUES (?, ?)
     ");
 
-    $stmt->bind_param("si", $nome, $id_empresa);
-    $stmt->execute();
+    if (!$stmt) {
+        apiResponse(["success" => false, "error" => $conn->error], 500);
+    }
 
-    echo json_encode(["status" => "ok"]);
-    exit;
+    $stmt->bind_param("si", $nome, $id_empresa);
+
+    if (!$stmt->execute()) {
+        apiResponse(["success" => false, "error" => $stmt->error], 500);
+    }
+
+    apiResponse([
+        "success" => true,
+        "id" => $conn->insert_id
+    ], 201);
 }
 
-/* =====================================================
-   REMOVER EQUIPE
-===================================================== */
 if ($method === "DELETE") {
-
     $id = $_GET["id"] ?? null;
 
-    if (!$id) {
-        echo json_encode(["error" => "id obrigatório"]);
-        exit;
+    if (!$id || !is_numeric($id)) {
+        apiResponse([
+            "success" => false,
+            "error" => "ID obrigatorio"
+        ], 400);
     }
 
     $stmt = $conn->prepare("
@@ -76,9 +74,25 @@ if ($method === "DELETE") {
         WHERE id = ? AND id_empresa = ?
     ");
 
-    $stmt->bind_param("ii", $id, $id_empresa);
-    $stmt->execute();
+    if (!$stmt) {
+        apiResponse(["success" => false, "error" => $conn->error], 500);
+    }
 
-    echo json_encode(["status" => "ok"]);
-    exit;
+    $id = (int) $id;
+    $stmt->bind_param("ii", $id, $id_empresa);
+
+    if (!$stmt->execute()) {
+        apiResponse(["success" => false, "error" => $stmt->error], 500);
+    }
+
+    apiResponse([
+        "success" => $stmt->affected_rows > 0,
+        "affected_rows" => $stmt->affected_rows
+    ], $stmt->affected_rows > 0 ? 200 : 404);
 }
+
+apiResponse([
+    "success" => false,
+    "error" => "Metodo nao suportado"
+], 405);
+?>
