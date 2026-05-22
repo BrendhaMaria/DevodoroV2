@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
@@ -9,7 +9,7 @@ $id_empresa = $auth["id_empresa"];
 $id_equipe = $_GET['id_equipe'] ?? null;
 
 if (!$id_equipe || !is_numeric($id_equipe)) {
-    apiResponse(["success" => false, "error" => "id_equipe obrigatorio"], 400);
+    apiResponse(["success" => false, "error" => "id_equipe obrigatório"], 400);
 }
 
 $id_equipe = (int) $id_equipe;
@@ -28,7 +28,7 @@ $check->bind_param("ii", $id_equipe, $id_empresa);
 $check->execute();
 
 if ($check->get_result()->num_rows !== 1) {
-    apiResponse(["success" => false, "error" => "Equipe nao encontrada"], 404);
+    apiResponse(["success" => false, "error" => "Equipe não encontrada"], 404);
 }
 
 $stmt = $conn->prepare("

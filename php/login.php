@@ -2,6 +2,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+header("Content-Type: text/html; charset=utf-8");
+
 session_set_cookie_params([
     "lifetime" => 0,
     "path" => "/",
@@ -23,7 +25,7 @@ if ($email === '' || $senha === '' || $tipo === '') {
 }
 
 if (!in_array($tipo, ["empresa", "funcionario"], true)) {
-    die("Tipo de usuario invalido");
+    die("Tipo de usuário inválido");
 }
 
 if ($tipo === "empresa") {
@@ -52,7 +54,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows !== 1) {
-    die("Usuario nao encontrado");
+    die("Usuário não encontrado");
 }
 
 $user = $result->fetch_assoc();
@@ -62,7 +64,7 @@ if (!password_verify($senha, $user['senha'])) {
 }
 
 if ($tipo === "funcionario" && empty($user['id_empresa'])) {
-    die("Funcionario sem empresa vinculada");
+    die("Funcionário sem empresa vinculada");
 }
 
 session_regenerate_id(true);

@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
@@ -46,13 +46,13 @@ if ($method === "GET") {
     $id_equipe = $_GET["id_equipe"] ?? null;
 
     if (!$id_equipe || !is_numeric($id_equipe)) {
-        apiResponse(["success" => false, "error" => "id_equipe obrigatorio"], 400);
+        apiResponse(["success" => false, "error" => "id_equipe obrigatório"], 400);
     }
 
     $id_equipe = (int) $id_equipe;
 
     if (!equipePertenceEmpresa($conn, $id_equipe, $id_empresa)) {
-        apiResponse(["success" => false, "error" => "Equipe nao encontrada"], 404);
+        apiResponse(["success" => false, "error" => "Equipe não encontrada"], 404);
     }
 
     $stmt = $conn->prepare("
@@ -88,7 +88,7 @@ if ($method === "POST") {
         !is_numeric($id_equipe) ||
         !is_numeric($id_funcionario)
     ) {
-        apiResponse(["success" => false, "error" => "Dados invalidos"], 400);
+        apiResponse(["success" => false, "error" => "Dados inválidos"], 400);
     }
 
     $id_equipe = (int) $id_equipe;
@@ -99,7 +99,7 @@ if ($method === "POST") {
     }
 
     if (!funcionarioPertenceEmpresa($conn, $id_funcionario, $id_empresa)) {
-        apiResponse(["success" => false, "error" => "Funcionario invalido"], 404);
+        apiResponse(["success" => false, "error" => "Funcionário inválido"], 404);
     }
 
     $stmt = $conn->prepare("
@@ -130,7 +130,7 @@ if ($method === "DELETE") {
         !is_numeric($id_equipe) ||
         !is_numeric($id_funcionario)
     ) {
-        apiResponse(["success" => false, "error" => "Dados invalidos"], 400);
+        apiResponse(["success" => false, "error" => "Dados inválidos"], 400);
     }
 
     $id_equipe = (int) $id_equipe;
@@ -162,5 +162,5 @@ if ($method === "DELETE") {
     ], $stmt->affected_rows > 0 ? 200 : 404);
 }
 
-apiResponse(["success" => false, "error" => "Metodo nao suportado"], 405);
+apiResponse(["success" => false, "error" => "Método não suportado"], 405);
 ?>

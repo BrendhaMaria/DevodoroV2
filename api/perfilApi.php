@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $usuario = $stmt->get_result()->fetch_assoc();
 
     if (!$usuario) {
-        apiResponse(["success" => false, "error" => "Usuario nao encontrado"], 404);
+        apiResponse(["success" => false, "error" => "Usuário não encontrado"], 404);
     }
 
     apiResponse($usuario);
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = trim($_POST['nome'] ?? '');
 
     if ($nome === '') {
-        apiResponse(["success" => false, "error" => "Nome obrigatorio"], 400);
+        apiResponse(["success" => false, "error" => "Nome obrigatório"], 400);
     }
 
     $caminhoImagem = null;
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($arquivo["size"] > $maxSize) {
             apiResponse([
                 "success" => false,
-                "error" => "Imagem muito grande. Maximo 5MB."
+                "error" => "Imagem muito grande. Máximo 5MB."
             ], 400);
         }
 
@@ -71,14 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!isset($mimesPermitidos[$mime])) {
             apiResponse([
                 "success" => false,
-                "error" => "Formato invalido."
+                "error" => "Formato inválido."
             ], 400);
         }
 
         if (getimagesize($arquivo["tmp_name"]) === false) {
             apiResponse([
                 "success" => false,
-                "error" => "Arquivo invalido."
+                "error" => "Arquivo inválido."
             ], 400);
         }
 
@@ -166,6 +166,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 apiResponse([
     "success" => false,
-    "error" => "Metodo invalido"
+    "error" => "Método inválido"
 ], 405);
 ?>

@@ -44,14 +44,14 @@ function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_e
     $titulo = trim((string) $titulo);
 
     if ($titulo === "") {
-        return ["success" => false, "error" => "Titulo vazio"];
+        return ["success" => false, "error" => "Título vazio"];
     }
 
     $estadosPermitidos = ["PENDENTE", "EM_ANDAMENTO", "CONCLUIDA"];
     $prioridadesPermitidas = ["BAIXA", "MEDIA", "ALTA"];
 
     if (!in_array($estado, $estadosPermitidos, true)) {
-        return ["success" => false, "error" => "Estado invalido"];
+        return ["success" => false, "error" => "Estado inválido"];
     }
 
     if (!in_array($prioridade, $prioridadesPermitidas, true)) {
@@ -63,7 +63,7 @@ function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_e
     }
 
     if (!prazoValido($prazo_entrega)) {
-        return ["success" => false, "error" => "Prazo invalido"];
+        return ["success" => false, "error" => "Prazo inválido"];
     }
 
     $stmt = $conn->prepare("
@@ -102,7 +102,7 @@ function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_e
 
 function deletarTarefa($conn, $id_empresa, $id_tarefa) {
     if (!tarefaIdValido($id_tarefa)) {
-        return ["success" => false, "error" => "ID da tarefa invalido"];
+        return ["success" => false, "error" => "ID da tarefa inválido"];
     }
 
     $stmt = $conn->prepare("
@@ -128,13 +128,13 @@ function deletarTarefa($conn, $id_empresa, $id_tarefa) {
 
 function atualizarEstado($conn, $id_empresa, $id_tarefa, $estado) {
     if (!tarefaIdValido($id_tarefa)) {
-        return ["success" => false, "error" => "ID da tarefa invalido"];
+        return ["success" => false, "error" => "ID da tarefa inválido"];
     }
 
     $estadosPermitidos = ["PENDENTE", "EM_ANDAMENTO", "CONCLUIDA"];
 
     if (!in_array($estado, $estadosPermitidos, true)) {
-        return ["success" => false, "error" => "Estado invalido"];
+        return ["success" => false, "error" => "Estado inválido"];
     }
 
     $stmt = $conn->prepare("

@@ -4,8 +4,12 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 function apiResponse($data, $status = 200) {
+    if (!headers_sent()) {
+        header("Content-Type: application/json; charset=utf-8");
+    }
+
     http_response_code($status);
-    echo json_encode($data);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -16,14 +20,14 @@ function requireAuth() {
     if (!$tipo || !$id_empresa || !is_numeric($id_empresa)) {
         apiResponse([
             "success" => false,
-            "error" => "Usuario nao autenticado"
+            "error" => "Usuário não autenticado"
         ], 401);
     }
 
     if (!in_array($tipo, ["empresa", "funcionario"], true)) {
         apiResponse([
             "success" => false,
-            "error" => "Sessao invalida"
+            "error" => "Sessão inválida"
         ], 401);
     }
 
@@ -39,7 +43,7 @@ function requireAuth() {
         if (!$id_funcionario || !is_numeric($id_funcionario)) {
             apiResponse([
                 "success" => false,
-                "error" => "Sessao de funcionario invalida"
+                "error" => "Sessão de funcionário inválida"
             ], 401);
         }
 

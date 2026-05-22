@@ -2,7 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
@@ -33,7 +33,7 @@ if ($method === "POST") {
     if (!$data) {
         apiResponse([
             "success" => false,
-            "error" => "JSON invalido ou vazio"
+            "error" => "JSON inválido ou vazio"
         ], 400);
     }
 
@@ -61,7 +61,7 @@ if ($method === "DELETE") {
     if (!$id_tarefa || !is_numeric($id_tarefa)) {
         apiResponse([
             "success" => false,
-            "error" => "ID da tarefa invalido"
+            "error" => "ID da tarefa inválido"
         ], 400);
     }
 
@@ -88,7 +88,7 @@ if ($method === "PUT") {
 
 apiResponse([
     "success" => false,
-    "error" => "Metodo nao suportado",
+    "error" => "Método não suportado",
     "method" => $method
 ], 405);
 ?>

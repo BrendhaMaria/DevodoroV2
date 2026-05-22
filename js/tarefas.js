@@ -13,7 +13,7 @@ async function requestJson(url, options = {}) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(getJsonError(data, "Erro ao processar requisicao"));
+    throw new Error(getJsonError(data, "Erro ao processar requisição"));
   }
 
   return data;

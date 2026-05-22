@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
@@ -24,7 +24,7 @@ $result = $stmt->get_result();
 $empresa = $result->fetch_assoc();
 
 if (!$empresa) {
-    apiResponse(["success" => false, "error" => "Empresa nao encontrada"], 404);
+    apiResponse(["success" => false, "error" => "Empresa não encontrada"], 404);
 }
 
 apiResponse($empresa);

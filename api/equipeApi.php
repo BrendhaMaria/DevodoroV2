@@ -1,5 +1,5 @@
 <?php
-header("Content-Type: application/json");
+header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
@@ -34,7 +34,7 @@ if ($method === "POST") {
     if ($nome === "") {
         apiResponse([
             "success" => false,
-            "error" => "Nome obrigatorio"
+            "error" => "Nome obrigatório"
         ], 400);
     }
 
@@ -65,7 +65,7 @@ if ($method === "DELETE") {
     if (!$id || !is_numeric($id)) {
         apiResponse([
             "success" => false,
-            "error" => "ID obrigatorio"
+            "error" => "ID obrigatório"
         ], 400);
     }
 
@@ -93,6 +93,6 @@ if ($method === "DELETE") {
 
 apiResponse([
     "success" => false,
-    "error" => "Metodo nao suportado"
+    "error" => "Método não suportado"
 ], 405);
 ?>

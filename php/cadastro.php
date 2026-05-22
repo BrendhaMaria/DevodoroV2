@@ -2,6 +2,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+header("Content-Type: text/html; charset=utf-8");
+
 require_once "conexao.php";
 
 $nome = trim($_POST['nome'] ?? '');
@@ -14,11 +16,11 @@ if ($nome === '' || $email === '' || $senhaTexto === '' || $tipo === '') {
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    die("Email invalido");
+    die("Email inválido");
 }
 
 if (!in_array($tipo, ["empresa", "funcionario"], true)) {
-    die("Tipo de usuario invalido");
+    die("Tipo de usuário inválido");
 }
 
 $senha = password_hash($senhaTexto, PASSWORD_DEFAULT);
@@ -48,8 +50,8 @@ if ($tipo === "empresa") {
         }
     }
 
-    if (!$codigo) {
-        die("Nao foi possivel gerar codigo da empresa");
+if (!$codigo) {
+        die("Não foi possível gerar código da empresa");
     }
 
     $stmt = $conn->prepare("
@@ -64,7 +66,7 @@ if ($tipo === "empresa") {
     $stmt->bind_param("ssss", $nome, $email, $senha, $codigo);
 
     if ($stmt->execute()) {
-        echo "Empresa cadastrada. Codigo de acesso: " . htmlspecialchars($codigo, ENT_QUOTES, "UTF-8");
+        echo "Empresa cadastrada. Código de acesso: " . htmlspecialchars($codigo, ENT_QUOTES, "UTF-8");
         exit;
     }
 
@@ -74,7 +76,7 @@ if ($tipo === "empresa") {
 $codigo = trim($_POST['codigo_empresa'] ?? '');
 
 if ($codigo === '') {
-    die("Codigo da empresa e obrigatorio");
+    die("Código da empresa é obrigatório");
 }
 
 $stmt = $conn->prepare("
@@ -94,7 +96,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows !== 1) {
-    die("Codigo da empresa invalido");
+    die("Código da empresa inválido");
 }
 
 $empresa = $result->fetch_assoc();
@@ -112,7 +114,7 @@ if (!$stmt) {
 $stmt->bind_param("sssi", $nome, $email, $senha, $id_empresa);
 
 if ($stmt->execute()) {
-    echo "Funcionario cadastrado com sucesso";
+    echo "Funcionário cadastrado com sucesso";
     exit;
 }
 
