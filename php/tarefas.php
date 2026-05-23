@@ -40,6 +40,43 @@ function listarTarefas($conn, $id_empresa) {
     return $tarefas;
 }
 
+function resumoTarefas($conn, $id_empresa) {
+    $stmt = $conn->prepare("
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN estado = 'CONCLUIDA' THEN 1 ELSE 0 END) AS concluidas,
+            SUM(CASE WHEN estado = 'EM_ANDAMENTO' THEN 1 ELSE 0 END) AS em_progresso,
+            SUM(
+                CASE
+                    WHEN prazo_entrega IS NOT NULL
+                     AND prazo_entrega < CURDATE()
+                     AND estado <> 'CONCLUIDA'
+                    THEN 1
+                    ELSE 0
+                END
+            ) AS atrasadas
+        FROM tarefas
+        WHERE id_empresa = ?
+    ");
+
+    if (!$stmt) {
+        return ["success" => false, "error" => $conn->error];
+    }
+
+    $stmt->bind_param("i", $id_empresa);
+    $stmt->execute();
+
+    $resumo = $stmt->get_result()->fetch_assoc();
+
+    return [
+        "success" => true,
+        "total" => (int) ($resumo["total"] ?? 0),
+        "concluidas" => (int) ($resumo["concluidas"] ?? 0),
+        "em_progresso" => (int) ($resumo["em_progresso"] ?? 0),
+        "atrasadas" => (int) ($resumo["atrasadas"] ?? 0)
+    ];
+}
+
 function criarTarefa($conn, $id_empresa, $titulo, $estado, $prioridade, $prazo_entrega) {
     $titulo = trim((string) $titulo);
 

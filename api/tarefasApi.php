@@ -18,6 +18,11 @@ function responseFromResult($resultado, $successStatus = 200, $errorStatus = 400
 }
 
 if ($method === "GET") {
+    if (($_GET["resumo"] ?? "") === "1") {
+        $resumo = resumoTarefas($conn, $id_empresa);
+        responseFromResult($resumo, 200, 500);
+    }
+
     $tarefas = listarTarefas($conn, $id_empresa);
 
     if (isset($tarefas["success"]) && $tarefas["success"] === false) {
