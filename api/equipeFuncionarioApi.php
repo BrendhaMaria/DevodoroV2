@@ -8,6 +8,10 @@ $auth = requireAuth();
 $id_empresa = $auth["id_empresa"];
 $method = $_SERVER['REQUEST_METHOD'];
 
+function idValido($id) {
+    return is_numeric($id) && (int) $id > 0;
+}
+
 function equipePertenceEmpresa($conn, $id_equipe, $id_empresa) {
     $stmt = $conn->prepare("
         SELECT id
@@ -16,7 +20,7 @@ function equipePertenceEmpresa($conn, $id_equipe, $id_empresa) {
     ");
 
     if (!$stmt) {
-        return false;
+        apiResponse(["success" => false, "error" => $conn->error], 500);
     }
 
     $stmt->bind_param("ii", $id_equipe, $id_empresa);
@@ -25,15 +29,17 @@ function equipePertenceEmpresa($conn, $id_equipe, $id_empresa) {
     return $stmt->get_result()->num_rows === 1;
 }
 
-function funcionarioPertenceEmpresa($conn, $id_funcionario, $id_empresa) {
+function funcionarioAtivoPertenceEmpresa($conn, $id_funcionario, $id_empresa) {
     $stmt = $conn->prepare("
         SELECT id_funcionario
         FROM funcionario
-        WHERE id_funcionario = ? AND id_empresa = ?
+        WHERE id_funcionario = ?
+          AND id_empresa = ?
+          AND ativo = 1
     ");
 
     if (!$stmt) {
-        return false;
+        apiResponse(["success" => false, "error" => $conn->error], 500);
     }
 
     $stmt->bind_param("ii", $id_funcionario, $id_empresa);
@@ -42,19 +48,7 @@ function funcionarioPertenceEmpresa($conn, $id_funcionario, $id_empresa) {
     return $stmt->get_result()->num_rows === 1;
 }
 
-if ($method === "GET") {
-    $id_equipe = $_GET["id_equipe"] ?? null;
-
-    if (!$id_equipe || !is_numeric($id_equipe)) {
-        apiResponse(["success" => false, "error" => "id_equipe obrigatório"], 400);
-    }
-
-    $id_equipe = (int) $id_equipe;
-
-    if (!equipePertenceEmpresa($conn, $id_equipe, $id_empresa)) {
-        apiResponse(["success" => false, "error" => "Equipe não encontrada"], 404);
-    }
-
+function listarMembrosEquipe($conn, $id_equipe, $id_empresa) {
     $stmt = $conn->prepare("
         SELECT f.id_funcionario, f.nome, f.email
         FROM equipe_funcionario ef
@@ -63,6 +57,7 @@ if ($method === "GET") {
         WHERE ef.id_equipe = ?
           AND e.id_empresa = ?
           AND f.id_empresa = ?
+          AND f.ativo = 1
         ORDER BY f.nome
     ");
 
@@ -73,35 +68,10 @@ if ($method === "GET") {
     $stmt->bind_param("iii", $id_equipe, $id_empresa, $id_empresa);
     $stmt->execute();
 
-    $result = $stmt->get_result();
-    apiResponse($result->fetch_all(MYSQLI_ASSOC));
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-if ($method === "POST") {
-    $data = readJsonInput();
-    $id_equipe = $data["id_equipe"] ?? null;
-    $id_funcionario = $data["id_funcionario"] ?? null;
-
-    if (
-        !$id_equipe ||
-        !$id_funcionario ||
-        !is_numeric($id_equipe) ||
-        !is_numeric($id_funcionario)
-    ) {
-        apiResponse(["success" => false, "error" => "Dados inválidos"], 400);
-    }
-
-    $id_equipe = (int) $id_equipe;
-    $id_funcionario = (int) $id_funcionario;
-
-    if (!equipePertenceEmpresa($conn, $id_equipe, $id_empresa)) {
-        apiResponse(["success" => false, "error" => "Equipe invalida"], 404);
-    }
-
-    if (!funcionarioPertenceEmpresa($conn, $id_funcionario, $id_empresa)) {
-        apiResponse(["success" => false, "error" => "Funcionário inválido"], 404);
-    }
-
+function adicionarMembroEquipe($conn, $id_equipe, $id_funcionario) {
     $stmt = $conn->prepare("
         INSERT IGNORE INTO equipe_funcionario (id_equipe, id_funcionario)
         VALUES (?, ?)
@@ -117,25 +87,13 @@ if ($method === "POST") {
         apiResponse(["success" => false, "error" => $stmt->error], 500);
     }
 
-    apiResponse(["success" => true], 201);
+    return [
+        "success" => true,
+        "affected_rows" => $stmt->affected_rows
+    ];
 }
 
-if ($method === "DELETE") {
-    $id_equipe = $_GET["id_equipe"] ?? null;
-    $id_funcionario = $_GET["id_funcionario"] ?? null;
-
-    if (
-        !$id_equipe ||
-        !$id_funcionario ||
-        !is_numeric($id_equipe) ||
-        !is_numeric($id_funcionario)
-    ) {
-        apiResponse(["success" => false, "error" => "Dados inválidos"], 400);
-    }
-
-    $id_equipe = (int) $id_equipe;
-    $id_funcionario = (int) $id_funcionario;
-
+function removerMembroEquipe($conn, $id_equipe, $id_funcionario, $id_empresa) {
     $stmt = $conn->prepare("
         DELETE ef FROM equipe_funcionario ef
         JOIN equipe e ON e.id = ef.id_equipe
@@ -156,10 +114,68 @@ if ($method === "DELETE") {
         apiResponse(["success" => false, "error" => $stmt->error], 500);
     }
 
-    apiResponse([
+    return [
         "success" => $stmt->affected_rows > 0,
         "affected_rows" => $stmt->affected_rows
-    ], $stmt->affected_rows > 0 ? 200 : 404);
+    ];
+}
+
+if ($method === "GET") {
+    $id_equipe = $_GET["id_equipe"] ?? null;
+
+    if (!idValido($id_equipe)) {
+        apiResponse(["success" => false, "error" => "id_equipe obrigatório"], 400);
+    }
+
+    $id_equipe = (int) $id_equipe;
+
+    if (!equipePertenceEmpresa($conn, $id_equipe, $id_empresa)) {
+        apiResponse(["success" => false, "error" => "Equipe não encontrada"], 404);
+    }
+
+    apiResponse(listarMembrosEquipe($conn, $id_equipe, $id_empresa));
+}
+
+if ($method === "POST") {
+    $data = readJsonInput();
+    $id_equipe = $data["id_equipe"] ?? null;
+    $id_funcionario = $data["id_funcionario"] ?? null;
+
+    if (!idValido($id_equipe) || !idValido($id_funcionario)) {
+        apiResponse(["success" => false, "error" => "Dados inválidos"], 400);
+    }
+
+    $id_equipe = (int) $id_equipe;
+    $id_funcionario = (int) $id_funcionario;
+
+    if (!equipePertenceEmpresa($conn, $id_equipe, $id_empresa)) {
+        apiResponse(["success" => false, "error" => "Equipe não encontrada"], 404);
+    }
+
+    if (!funcionarioAtivoPertenceEmpresa($conn, $id_funcionario, $id_empresa)) {
+        apiResponse(["success" => false, "error" => "Funcionário inválido"], 404);
+    }
+
+    $resultado = adicionarMembroEquipe($conn, $id_equipe, $id_funcionario);
+    apiResponse($resultado, $resultado["affected_rows"] > 0 ? 201 : 200);
+}
+
+if ($method === "DELETE") {
+    $id_equipe = $_GET["id_equipe"] ?? null;
+    $id_funcionario = $_GET["id_funcionario"] ?? null;
+
+    if (!idValido($id_equipe) || !idValido($id_funcionario)) {
+        apiResponse(["success" => false, "error" => "Dados inválidos"], 400);
+    }
+
+    $resultado = removerMembroEquipe(
+        $conn,
+        (int) $id_equipe,
+        (int) $id_funcionario,
+        $id_empresa
+    );
+
+    apiResponse($resultado, $resultado["success"] ? 200 : 404);
 }
 
 apiResponse(["success" => false, "error" => "Método não suportado"], 405);
