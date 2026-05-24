@@ -1,4 +1,5 @@
 const TASKS_API_URL = "../../api/tarefasApi.php";
+const { requestJson } = window.DevodoroApi;
 
 let timer;
 let time = 25 * 60;
@@ -13,20 +14,6 @@ function setCardValue(cardId, value) {
   if (card) {
     card.textContent = value;
   }
-}
-
-async function requestJson(url) {
-  const res = await fetch(url, {
-    cache: "no-store"
-  });
-
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    throw new Error(data && data.error ? data.error : "Erro ao carregar dados");
-  }
-
-  return data;
 }
 
 function formatTaskDate(date) {

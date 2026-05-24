@@ -36,20 +36,20 @@ function buscarPerfil($conn, $ctx) {
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => "Erro ao preparar consulta."], 500);
+        apiError("Erro ao preparar consulta.", 500);
     }
 
     $stmt->bind_param("i", $ctx["id"]);
 
     if (!$stmt->execute()) {
-        apiResponse(["success" => false, "error" => "Erro ao buscar perfil."], 500);
+        apiError("Erro ao buscar perfil.", 500);
     }
 
     $perfil = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     if (!$perfil) {
-        apiResponse(["success" => false, "error" => "Usuario nao encontrado."], 404);
+        apiError("Usuario nao encontrado.", 404);
     }
 
     return $perfil;
@@ -64,13 +64,13 @@ function emailJaUsado($conn, $ctx, $email) {
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => "Erro ao validar email."], 500);
+        apiError("Erro ao validar email.", 500);
     }
 
     $stmt->bind_param("si", $email, $ctx["id"]);
 
     if (!$stmt->execute()) {
-        apiResponse(["success" => false, "error" => "Erro ao validar email."], 500);
+        apiError("Erro ao validar email.", 500);
     }
 
     $existe = (bool) $stmt->get_result()->fetch_assoc();
@@ -85,11 +85,11 @@ function validarUploadAvatar($arquivo) {
     }
 
     if ($arquivo["error"] !== UPLOAD_ERR_OK) {
-        apiResponse(["success" => false, "error" => "Erro no envio da imagem."], 400);
+        apiError("Erro no envio da imagem.", 400);
     }
 
     if ($arquivo["size"] > AVATAR_MAX_BYTES) {
-        apiResponse(["success" => false, "error" => "Imagem muito grande. Maximo 5MB."], 400);
+        apiError("Imagem muito grande. Maximo 5MB.", 400);
     }
 
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -102,7 +102,7 @@ function validarUploadAvatar($arquivo) {
     ];
 
     if (!isset($mimesPermitidos[$mime]) || getimagesize($arquivo["tmp_name"]) === false) {
-        apiResponse(["success" => false, "error" => "Formato de imagem invalido."], 400);
+        apiError("Formato de imagem invalido.", 400);
     }
 
     return $mimesPermitidos[$mime];
@@ -116,14 +116,14 @@ function salvarAvatar($arquivo, $ext) {
     $diretorio = "../uploads/perfis/";
 
     if (!is_dir($diretorio) && !mkdir($diretorio, 0755, true)) {
-        apiResponse(["success" => false, "error" => "Erro ao preparar diretorio de upload."], 500);
+        apiError("Erro ao preparar diretorio de upload.", 500);
     }
 
     $nomeArquivo = bin2hex(random_bytes(16)) . "." . $ext;
     $destino = $diretorio . $nomeArquivo;
 
     if (!move_uploaded_file($arquivo["tmp_name"], $destino)) {
-        apiResponse(["success" => false, "error" => "Erro ao salvar imagem."], 500);
+        apiError("Erro ao salvar imagem.", 500);
     }
 
     return "uploads/perfis/" . $nomeArquivo;
@@ -149,22 +149,22 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 }
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    apiResponse(["success" => false, "error" => "Metodo invalido."], 405);
+    apiError("Metodo nao suportado.", 405, ["method" => $_SERVER["REQUEST_METHOD"]]);
 }
 
 $nome = trim($_POST["nome"] ?? "");
 $email = trim($_POST["email"] ?? "");
 
 if ($nome === "") {
-    apiResponse(["success" => false, "error" => "Nome obrigatorio."], 400);
+    apiError("Nome obrigatorio.", 400);
 }
 
 if ($email === "" || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    apiResponse(["success" => false, "error" => "Email invalido."], 400);
+    apiError("Email invalido.", 400);
 }
 
 if (emailJaUsado($conn, $ctx, $email)) {
-    apiResponse(["success" => false, "error" => "Este email ja esta em uso."], 409);
+    apiError("Este email ja esta em uso.", 409);
 }
 
 $perfilAtual = buscarPerfil($conn, $ctx);
@@ -180,7 +180,7 @@ if ($novoAvatar) {
 
     if (!$stmt) {
         unlink("../" . $novoAvatar);
-        apiResponse(["success" => false, "error" => "Erro ao preparar atualizacao."], 500);
+        apiError("Erro ao preparar atualizacao.", 500);
     }
 
     $stmt->bind_param("sssi", $nome, $email, $novoAvatar, $ctx["id"]);
@@ -192,7 +192,7 @@ if ($novoAvatar) {
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => "Erro ao preparar atualizacao."], 500);
+        apiError("Erro ao preparar atualizacao.", 500);
     }
 
     $stmt->bind_param("ssi", $nome, $email, $ctx["id"]);
@@ -203,7 +203,7 @@ if (!$stmt->execute()) {
         unlink("../" . $novoAvatar);
     }
 
-    apiResponse(["success" => false, "error" => "Erro ao atualizar perfil."], 500);
+    apiError("Erro ao atualizar perfil.", 500);
 }
 
 $stmt->close();

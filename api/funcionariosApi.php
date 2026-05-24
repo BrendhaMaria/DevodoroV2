@@ -5,15 +5,9 @@ require_once "../php/conexao.php";
 require_once "../php/auth.php";
 
 $auth = requireAuth();
-$id_empresa = $auth["id_empresa"];
-$method = $_SERVER["REQUEST_METHOD"];
+$idEmpresa = $auth["id_empresa"];
 
-if ($method !== "GET") {
-    apiResponse([
-        "success" => false,
-        "error" => "Metodo nao suportado"
-    ], 405);
-}
+apiRequireMethod("GET");
 
 $stmt = $conn->prepare("
     SELECT id_funcionario, nome, email
@@ -24,11 +18,17 @@ $stmt = $conn->prepare("
 ");
 
 if (!$stmt) {
-    apiResponse(["success" => false, "error" => $conn->error], 500);
+    apiError("Erro ao preparar consulta.", 500);
 }
 
-$stmt->bind_param("i", $id_empresa);
-$stmt->execute();
+$stmt->bind_param("i", $idEmpresa);
 
-apiResponse($stmt->get_result()->fetch_all(MYSQLI_ASSOC));
+if (!$stmt->execute()) {
+    apiError("Erro ao listar funcionarios.", 500);
+}
+
+$funcionarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+apiResponse($funcionarios);
 ?>

@@ -5,14 +5,10 @@ require_once "../php/conexao.php";
 require_once "../php/auth.php";
 
 $auth = requireAuth();
-$id_empresa = $auth["id_empresa"];
-$method = $_SERVER['REQUEST_METHOD'];
+$idEmpresa = $auth["id_empresa"];
+$method = $_SERVER["REQUEST_METHOD"];
 
-function idValido($id) {
-    return is_numeric($id) && (int) $id > 0;
-}
-
-function listarEquipes($conn, $id_empresa) {
+function listarEquipes($conn, $idEmpresa) {
     $stmt = $conn->prepare("
         SELECT id, nome
         FROM equipe
@@ -21,62 +17,75 @@ function listarEquipes($conn, $id_empresa) {
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => $conn->error], 500);
+        apiError("Erro ao preparar consulta.", 500);
     }
 
-    $stmt->bind_param("i", $id_empresa);
-    $stmt->execute();
+    $stmt->bind_param("i", $idEmpresa);
 
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    if (!$stmt->execute()) {
+        apiError("Erro ao listar equipes.", 500);
+    }
+
+    $equipes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    return $equipes;
 }
 
-function criarEquipe($conn, $id_empresa, $nome) {
+function criarEquipe($conn, $idEmpresa, $nome) {
     $stmt = $conn->prepare("
         INSERT INTO equipe (nome, id_empresa)
         VALUES (?, ?)
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => $conn->error], 500);
+        apiError("Erro ao preparar cadastro.", 500);
     }
 
-    $stmt->bind_param("si", $nome, $id_empresa);
+    $stmt->bind_param("si", $nome, $idEmpresa);
 
     if (!$stmt->execute()) {
-        apiResponse(["success" => false, "error" => $stmt->error], 500);
+        apiError("Erro ao criar equipe.", 500);
     }
+
+    $id = $conn->insert_id;
+    $stmt->close();
 
     return [
         "success" => true,
-        "id" => $conn->insert_id,
+        "id" => $id,
         "nome" => $nome
     ];
 }
 
-function removerEquipe($conn, $id_empresa, $id) {
+function removerEquipe($conn, $idEmpresa, $idEquipe) {
     $stmt = $conn->prepare("
         DELETE FROM equipe
         WHERE id = ? AND id_empresa = ?
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => $conn->error], 500);
+        apiError("Erro ao preparar remocao.", 500);
     }
 
-    $stmt->bind_param("ii", $id, $id_empresa);
+    $stmt->bind_param("ii", $idEquipe, $idEmpresa);
 
     if (!$stmt->execute()) {
-        apiResponse(["success" => false, "error" => $stmt->error], 500);
+        apiError("Erro ao remover equipe.", 500);
     }
 
-    return [
+    $resultado = [
         "success" => $stmt->affected_rows > 0,
         "affected_rows" => $stmt->affected_rows
     ];
+
+    $stmt->close();
+
+    return $resultado;
 }
 
 if ($method === "GET") {
-    apiResponse(listarEquipes($conn, $id_empresa));
+    apiResponse(listarEquipes($conn, $idEmpresa));
 }
 
 if ($method === "POST") {
@@ -84,31 +93,22 @@ if ($method === "POST") {
     $nome = trim((string) ($data["nome"] ?? ""));
 
     if ($nome === "") {
-        apiResponse([
-            "success" => false,
-            "error" => "Nome obrigatório"
-        ], 400);
+        apiError("Nome obrigatorio.", 400);
     }
 
-    apiResponse(criarEquipe($conn, $id_empresa, $nome), 201);
+    apiResponse(criarEquipe($conn, $idEmpresa, $nome), 201);
 }
 
 if ($method === "DELETE") {
-    $id = $_GET["id"] ?? null;
+    $idEquipe = $_GET["id"] ?? null;
 
-    if (!idValido($id)) {
-        apiResponse([
-            "success" => false,
-            "error" => "ID obrigatório"
-        ], 400);
+    if (!apiPositiveId($idEquipe)) {
+        apiError("ID obrigatorio.", 400);
     }
 
-    $resultado = removerEquipe($conn, $id_empresa, (int) $id);
+    $resultado = removerEquipe($conn, $idEmpresa, (int) $idEquipe);
     apiResponse($resultado, $resultado["success"] ? 200 : 404);
 }
 
-apiResponse([
-    "success" => false,
-    "error" => "Método não suportado"
-], 405);
+apiError("Metodo nao suportado.", 405, ["method" => $method]);
 ?>

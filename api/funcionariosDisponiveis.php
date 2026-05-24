@@ -3,34 +3,14 @@ header("Content-Type: application/json; charset=utf-8");
 
 require_once "../php/conexao.php";
 require_once "../php/auth.php";
+require_once "../php/equipes.php";
 
 $auth = requireAuth();
-$id_empresa = $auth["id_empresa"];
-$method = $_SERVER['REQUEST_METHOD'];
-$id_equipe = $_GET['id_equipe'] ?? null;
+$idEmpresa = $auth["id_empresa"];
+$method = $_SERVER["REQUEST_METHOD"];
+$idEquipe = $_GET["id_equipe"] ?? null;
 
-function idValido($id) {
-    return is_numeric($id) && (int) $id > 0;
-}
-
-function equipePertenceEmpresa($conn, $id_equipe, $id_empresa) {
-    $stmt = $conn->prepare("
-        SELECT id
-        FROM equipe
-        WHERE id = ? AND id_empresa = ?
-    ");
-
-    if (!$stmt) {
-        apiResponse(["success" => false, "error" => $conn->error], 500);
-    }
-
-    $stmt->bind_param("ii", $id_equipe, $id_empresa);
-    $stmt->execute();
-
-    return $stmt->get_result()->num_rows === 1;
-}
-
-function listarFuncionariosDisponiveis($conn, $id_empresa, $id_equipe) {
+function listarFuncionariosDisponiveis($conn, $idEmpresa, $idEquipe) {
     $stmt = $conn->prepare("
         SELECT f.id_funcionario, f.nome, f.email
         FROM funcionario f
@@ -46,28 +26,32 @@ function listarFuncionariosDisponiveis($conn, $id_empresa, $id_equipe) {
     ");
 
     if (!$stmt) {
-        apiResponse(["success" => false, "error" => $conn->error], 500);
+        apiError("Erro ao preparar consulta.", 500);
     }
 
-    $stmt->bind_param("ii", $id_empresa, $id_equipe);
-    $stmt->execute();
+    $stmt->bind_param("ii", $idEmpresa, $idEquipe);
 
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    if (!$stmt->execute()) {
+        apiError("Erro ao listar funcionarios.", 500);
+    }
+
+    $funcionarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    return $funcionarios;
 }
 
-if ($method !== "GET") {
-    apiResponse(["success" => false, "error" => "Método não suportado"], 405);
+apiRequireMethod("GET");
+
+if (!apiPositiveId($idEquipe)) {
+    apiError("id_equipe obrigatorio.", 400);
 }
 
-if (!idValido($id_equipe)) {
-    apiResponse(["success" => false, "error" => "id_equipe obrigatório"], 400);
+$idEquipe = (int) $idEquipe;
+
+if (!equipePertenceEmpresa($conn, $idEquipe, $idEmpresa)) {
+    apiError("Equipe nao encontrada.", 404);
 }
 
-$id_equipe = (int) $id_equipe;
-
-if (!equipePertenceEmpresa($conn, $id_equipe, $id_empresa)) {
-    apiResponse(["success" => false, "error" => "Equipe não encontrada"], 404);
-}
-
-apiResponse(listarFuncionariosDisponiveis($conn, $id_empresa, $id_equipe));
+apiResponse(listarFuncionariosDisponiveis($conn, $idEmpresa, $idEquipe));
 ?>

@@ -13,41 +13,55 @@ function apiResponse($data, $status = 200) {
     exit;
 }
 
-function requireAuth() {
-    $tipo = $_SESSION['tipo'] ?? null;
-    $id_empresa = $_SESSION['id_empresa'] ?? null;
+function apiError($message, $status = 400, $extra = []) {
+    apiResponse(array_merge([
+        "success" => false,
+        "error" => $message
+    ], $extra), $status);
+}
 
-    if (!$tipo || !$id_empresa || !is_numeric($id_empresa)) {
-        apiResponse([
-            "success" => false,
-            "error" => "Usuário não autenticado"
-        ], 401);
+function apiSuccess($data = [], $status = 200) {
+    apiResponse(array_merge(["success" => true], $data), $status);
+}
+
+function apiRequireMethod($method) {
+    if ($_SERVER["REQUEST_METHOD"] !== $method) {
+        apiError("Metodo nao suportado.", 405, [
+            "method" => $_SERVER["REQUEST_METHOD"]
+        ]);
+    }
+}
+
+function apiPositiveId($id) {
+    return is_numeric($id) && (int) $id > 0;
+}
+
+function requireAuth() {
+    $tipo = $_SESSION["tipo"] ?? null;
+    $idEmpresa = $_SESSION["id_empresa"] ?? null;
+
+    if (!$tipo || !$idEmpresa || !is_numeric($idEmpresa)) {
+        apiError("Usuario nao autenticado.", 401);
     }
 
     if (!in_array($tipo, ["empresa", "funcionario"], true)) {
-        apiResponse([
-            "success" => false,
-            "error" => "Sessão inválida"
-        ], 401);
+        apiError("Sessao invalida.", 401);
     }
 
     $auth = [
         "tipo" => $tipo,
-        "id_empresa" => (int) $id_empresa,
+        "id_empresa" => (int) $idEmpresa,
         "id_funcionario" => null
     ];
 
     if ($tipo === "funcionario") {
-        $id_funcionario = $_SESSION['id_funcionario'] ?? null;
+        $idFuncionario = $_SESSION["id_funcionario"] ?? null;
 
-        if (!$id_funcionario || !is_numeric($id_funcionario)) {
-            apiResponse([
-                "success" => false,
-                "error" => "Sessão de funcionário inválida"
-            ], 401);
+        if (!$idFuncionario || !is_numeric($idFuncionario)) {
+            apiError("Sessao de funcionario invalida.", 401);
         }
 
-        $auth["id_funcionario"] = (int) $id_funcionario;
+        $auth["id_funcionario"] = (int) $idFuncionario;
     }
 
     return $auth;
@@ -57,10 +71,7 @@ function requireEmpresa() {
     $auth = requireAuth();
 
     if ($auth["tipo"] !== "empresa") {
-        apiResponse([
-            "success" => false,
-            "error" => "Acesso permitido apenas para empresa"
-        ], 403);
+        apiError("Acesso permitido apenas para empresa.", 403);
     }
 
     return $auth;

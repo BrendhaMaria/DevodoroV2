@@ -1,38 +1,9 @@
 const EQUIPES_API = "../../api/equipeApi.php";
 const EQUIPE_FUNCIONARIO_API = "../../api/equipeFuncionarioApi.php";
 const FUNCIONARIOS_DISPONIVEIS_API = "../../api/funcionariosDisponiveis.php";
+const { requestJson, clearElement, createButton } = window.DevodoroApi;
 
 let selectedTeam = null;
-
-function getJsonError(data, fallback) {
-  return data && data.error ? data.error : fallback;
-}
-
-async function requestJson(url, options = {}) {
-  const res = await fetch(url, options);
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    throw new Error(getJsonError(data, "Erro ao processar requisição"));
-  }
-
-  return data;
-}
-
-function clearElement(element) {
-  if (element) {
-    element.innerHTML = "";
-  }
-}
-
-function createButton(text, onClick) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.textContent = text;
-  button.addEventListener("click", onClick);
-
-  return button;
-}
 
 function createCard(text, onClick) {
   const card = document.createElement("div");
@@ -104,7 +75,7 @@ function renderAvailableEmployees(employees) {
   }
 
   if (!Array.isArray(employees) || employees.length === 0) {
-    renderEmpty(list, "Nenhum funcionário disponível.");
+    renderEmpty(list, "Nenhum funcionario disponivel.");
     return;
   }
 

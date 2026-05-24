@@ -3,6 +3,7 @@
   const API_EMPRESA = "../../api/empresa-info.php";
   const AVATAR_PADRAO = "../../uploads/perfis/default.png";
   const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+  const { requestJson } = window.DevodoroApi;
 
   const elements = {
     nome: document.getElementById("nameInput"),
@@ -28,20 +29,6 @@
     return "../../" + caminho.replace(/^(\.\.\/|\.\/|\/)+/, "");
   }
 
-  async function lerJson(res) {
-    const data = await res.json().catch(() => null);
-
-    if (!data) {
-      throw new Error("Resposta invalida do servidor.");
-    }
-
-    if (!res.ok || data.error) {
-      throw new Error(data.error || "Erro na requisicao.");
-    }
-
-    return data;
-  }
-
   function atualizarCamposPerfil(perfil) {
     elements.nome.value = perfil.nome || "";
     elements.email.value = perfil.email || "";
@@ -49,8 +36,7 @@
   }
 
   async function carregarPerfil() {
-    const res = await fetch(API_PERFIL, { cache: "no-store" });
-    const perfil = await lerJson(res);
+    const perfil = await requestJson(API_PERFIL);
     atualizarCamposPerfil(perfil);
   }
 
@@ -60,14 +46,7 @@
     }
 
     try {
-      const res = await fetch(API_EMPRESA, { cache: "no-store" });
-
-      if (res.status === 403) {
-        elements.codigoCard.style.display = "none";
-        return;
-      }
-
-      const empresa = await lerJson(res);
+      const empresa = await requestJson(API_EMPRESA);
       elements.codigoEmpresa.value = empresa.codigo_acesso || "";
     } catch (err) {
       console.log("Erro ao carregar empresa", err);
@@ -131,12 +110,10 @@
     elements.salvarPerfil.disabled = true;
 
     try {
-      const res = await fetch(API_PERFIL, {
+      const data = await requestJson(API_PERFIL, {
         method: "POST",
         body: formData
       });
-
-      const data = await lerJson(res);
 
       if (data.perfil) {
         atualizarCamposPerfil(data.perfil);

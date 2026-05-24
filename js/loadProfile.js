@@ -1,5 +1,6 @@
 const PROFILE_API_URL = "../../api/perfilApi.php";
 const DEFAULT_PROFILE_AVATAR = "../../uploads/perfis/default.png";
+const { requestJson } = window.DevodoroApi;
 
 function getProfileAvatarUrl(path) {
   if (!path) {
@@ -29,26 +30,7 @@ function renderSidebarAvatar(container, avatarUrl) {
 
 async function carregarPerfilSidebar() {
   try {
-    const res = await fetch(PROFILE_API_URL, {
-      cache: "no-store"
-    });
-
-    if (res.status === 401 || res.status === 403) {
-      window.location.replace("../cadastrologin.html");
-      return;
-    }
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data || data.error) {
-      if (data && data.error && data.error.toLowerCase().includes("autenticado")) {
-        window.location.replace("../cadastrologin.html");
-        return;
-      }
-
-      console.log(data ? data.error : "Erro ao carregar perfil");
-      return;
-    }
+    const data = await requestJson(PROFILE_API_URL);
 
     document.querySelectorAll(".sidebarNome").forEach((el) => {
       el.textContent = data.nome || "";
@@ -60,6 +42,11 @@ async function carregarPerfilSidebar() {
       renderSidebarAvatar(el, foto);
     });
   } catch (err) {
+    if (err.message && err.message.toLowerCase().includes("autenticado")) {
+      window.location.replace("../cadastrologin.html");
+      return;
+    }
+
     console.log("Erro ao carregar perfil", err);
   }
 }

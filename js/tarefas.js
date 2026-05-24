@@ -1,6 +1,7 @@
 const API_URL = "../../api/tarefasApi.php";
 const EQUIPES_API_URL = "../../api/equipeApi.php";
 const FUNCIONARIOS_API_URL = "../../api/funcionariosApi.php";
+const { requestJson } = window.DevodoroApi;
 
 let equipesDisponiveis = [];
 let funcionariosDisponiveis = [];
@@ -8,21 +9,6 @@ let editingTaskId = null;
 
 function getTaskList() {
   return document.getElementById("taskList");
-}
-
-function getJsonError(data, fallback) {
-  return data && data.error ? data.error : fallback;
-}
-
-async function requestJson(url, options = {}) {
-  const res = await fetch(url, options);
-  const data = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    throw new Error(getJsonError(data, "Erro ao processar requisicao"));
-  }
-
-  return data;
 }
 
 function formatDate(date) {
