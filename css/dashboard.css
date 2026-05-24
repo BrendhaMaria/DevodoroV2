@@ -153,6 +153,27 @@ body {
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-content p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .badge {
@@ -193,6 +214,14 @@ option{
   font-weight: 600;
   font-size: 1em;
   margin-left: 15px;
+}
+.btn-link {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 5px 8px;
 }
 #total{
   box-shadow:0 0 5dvb rgba(194, 3, 114, 0.548);
@@ -377,6 +406,10 @@ option{
   border-radius: 10px;
   border: 1px solid #ccc;
   outline: none;
+}
+
+.modal-body select[multiple] {
+  min-height: 96px;
 }
 
 .dark .modal-body input,

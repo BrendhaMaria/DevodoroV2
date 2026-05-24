@@ -46,6 +46,8 @@ if ($method === "POST") {
     $estado = $data["estado"] ?? "PENDENTE";
     $prioridade = $data["prioridade"] ?? "MEDIA";
     $prazo_entrega = $data["prazo_entrega"] ?? null;
+    $ids_equipes = $data["id_equipes"] ?? [];
+    $ids_funcionarios = $data["id_funcionarios"] ?? [];
 
     $resultado = criarTarefa(
         $conn,
@@ -53,7 +55,9 @@ if ($method === "POST") {
         $titulo,
         $estado,
         $prioridade,
-        $prazo_entrega
+        $prazo_entrega,
+        $ids_equipes,
+        $ids_funcionarios
     );
 
     responseFromResult($resultado, 201, 400);
@@ -78,8 +82,29 @@ if ($method === "PUT") {
     $data = readJsonInput();
     $id_tarefa = $data["id_tarefa"] ?? null;
     $estado = $data["estado"] ?? null;
+    $acao = $data["acao"] ?? null;
 
-    if (!$id_tarefa || !is_numeric($id_tarefa) || !$estado) {
+    if (!$id_tarefa || !is_numeric($id_tarefa)) {
+        apiResponse([
+            "success" => false,
+            "error" => "ID da tarefa invÃ¡lido"
+        ], 400);
+    }
+
+    if ($acao === "vinculos" || array_key_exists("id_equipes", $data) || array_key_exists("id_funcionarios", $data)) {
+        $resultado = atualizarVinculosTarefa(
+            $conn,
+            $id_empresa,
+            (int) $id_tarefa,
+            $data["id_equipes"] ?? [],
+            $data["id_funcionarios"] ?? []
+        );
+
+        $status = isset($resultado["error"]) && $resultado["error"] === "Tarefa nao encontrada" ? 404 : 400;
+        responseFromResult($resultado, 200, $status);
+    }
+
+    if (!$estado) {
         apiResponse([
             "success" => false,
             "error" => "Dados incompletos"

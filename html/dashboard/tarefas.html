@@ -65,7 +65,7 @@
   <div class="modal-content">
 
     <div class="modal-header">
-      <h2>Nova Tarefa</h2>
+      <h2 id="taskModalTitle">Nova Tarefa</h2>
       <button class="close-btn" onclick="closeModal()">×</button>
     </div>
 
@@ -91,11 +91,17 @@
       <label>Prazo de entrega</label>
       <input type="date" id="prazo">
 
+      <label>Equipes vinculadas</label>
+      <select id="equipesTarefa" multiple></select>
+
+      <label>FuncionÃ¡rios vinculados</label>
+      <select id="funcionariosTarefa" multiple></select>
+
     </div>
 
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" onclick="addTask()">Criar tarefa</button>
+      <button class="btn-save" id="taskModalSave" onclick="saveTask()">Criar tarefa</button>
     </div>
 
   </div>
