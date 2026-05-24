@@ -1,16 +1,26 @@
-const btn = document.getElementById("escuro");
+(function () {
+  const THEME_KEY = "theme";
+  const DARK_THEME = "dark";
+  const LIGHT_THEME = "light";
+  const btn = document.getElementById("escuro");
 
-btn.addEventListener("click", () => {
-  document.body.classList.toggle("dark");
+  function aplicarTema(theme) {
+    const dark = theme === DARK_THEME;
 
-  if (document.body.classList.contains("dark")) {
-    localStorage.setItem("theme", "dark");
-  } else {
-    localStorage.setItem("theme", "light");
+    document.documentElement.classList.toggle("dark", dark);
+    document.body.classList.toggle("dark", dark);
+    localStorage.setItem(THEME_KEY, dark ? DARK_THEME : LIGHT_THEME);
   }
-});
 
-// carregar tema salvo
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark");
-}
+  aplicarTema(localStorage.getItem(THEME_KEY) === DARK_THEME ? DARK_THEME : LIGHT_THEME);
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      const temaAtual = document.documentElement.classList.contains("dark")
+        ? DARK_THEME
+        : LIGHT_THEME;
+
+      aplicarTema(temaAtual === DARK_THEME ? LIGHT_THEME : DARK_THEME);
+    });
+  }
+})();
