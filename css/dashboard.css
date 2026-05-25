@@ -495,3 +495,7 @@ option{
   background: var(--side-bg);
   color: var(--text);
 }
+
+.hidden-input {
+  display: none;
+}
