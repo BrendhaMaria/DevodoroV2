@@ -4,8 +4,8 @@ ini_set("display_errors", 0);
 
 header("Content-Type: application/json; charset=utf-8");
 
-require_once "../php/conexao.php";
 require_once "../php/auth.php";
+require_once "../php/conexao.php";
 require_once "../php/tarefas.php";
 
 $auth = requireAuth();
@@ -55,6 +55,11 @@ if ($method === "POST") {
 
 if ($method === "DELETE") {
     $data = readJsonInput();
+
+    if (!$data) {
+        apiError("JSON invalido ou vazio.", 400);
+    }
+
     $idTarefa = $data["id_tarefa"] ?? null;
 
     if (!apiPositiveId($idTarefa)) {
@@ -67,6 +72,11 @@ if ($method === "DELETE") {
 
 if ($method === "PUT") {
     $data = readJsonInput();
+
+    if (!$data) {
+        apiError("JSON invalido ou vazio.", 400);
+    }
+
     $idTarefa = $data["id_tarefa"] ?? null;
     $estado = $data["estado"] ?? null;
     $acao = $data["acao"] ?? null;

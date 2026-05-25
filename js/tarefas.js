@@ -1,7 +1,13 @@
 const API_URL = "../../api/tarefasApi.php";
 const EQUIPES_API_URL = "../../api/equipeApi.php";
 const FUNCIONARIOS_API_URL = "../../api/funcionariosApi.php";
-const { requestJson } = window.DevodoroApi;
+const apiClient = window.DevodoroApi;
+
+if (!apiClient) {
+  throw new Error("DevodoroApi nao foi carregado antes de tarefas.js.");
+}
+
+const tarefasRequestJson = apiClient.requestJson;
 
 let equipesDisponiveis = [];
 let funcionariosDisponiveis = [];
@@ -138,8 +144,8 @@ function renderTasks(tasks) {
 
 async function loadTaskOptions() {
   const [equipes, funcionarios] = await Promise.all([
-    requestJson(EQUIPES_API_URL),
-    requestJson(FUNCIONARIOS_API_URL)
+    tarefasRequestJson(EQUIPES_API_URL),
+    tarefasRequestJson(FUNCIONARIOS_API_URL)
   ]);
 
   equipesDisponiveis = Array.isArray(equipes) ? equipes : [];
@@ -151,7 +157,7 @@ async function loadTaskOptions() {
 
 async function loadTasks() {
   try {
-    const tasks = await requestJson(API_URL);
+    const tasks = await tarefasRequestJson(API_URL);
     renderTasks(Array.isArray(tasks) ? tasks : []);
   } catch (err) {
     console.error(err);
@@ -166,12 +172,17 @@ async function addTask() {
   const prioridade = document.getElementById("prioridade");
   const prazo = document.getElementById("prazo");
 
+  if (!input || !estado || !prioridade || !prazo) {
+    console.error("Formulario de tarefa incompleto.");
+    return;
+  }
+
   const titulo = input.value.trim();
 
   if (!titulo) return;
 
   try {
-    await requestJson(API_URL, {
+    await tarefasRequestJson(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -188,11 +199,11 @@ async function addTask() {
 
     input.value = "";
     prazo.value = "";
-    document.getElementById("equipesTarefa").selectedIndex = -1;
-    document.getElementById("funcionariosTarefa").selectedIndex = -1;
+    setSelectedOptions("equipesTarefa", []);
+    setSelectedOptions("funcionariosTarefa", []);
 
     closeModal();
-    loadTasks();
+    await loadTasks();
   } catch (err) {
     console.error(err);
     alert(err.message);
@@ -201,7 +212,7 @@ async function addTask() {
 
 async function updateTaskAssignments() {
   try {
-    await requestJson(API_URL, {
+    await tarefasRequestJson(API_URL, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -215,7 +226,7 @@ async function updateTaskAssignments() {
     });
 
     closeModal();
-    loadTasks();
+    await loadTasks();
   } catch (err) {
     console.error(err);
     alert(err.message);
@@ -233,7 +244,7 @@ function saveTask() {
 
 async function deleteTask(id) {
   try {
-    await requestJson(API_URL, {
+    await tarefasRequestJson(API_URL, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -241,7 +252,7 @@ async function deleteTask(id) {
       body: JSON.stringify({ id_tarefa: id })
     });
 
-    loadTasks();
+    await loadTasks();
   } catch (err) {
     console.error(err);
     alert(err.message);
@@ -250,12 +261,19 @@ async function deleteTask(id) {
 
 function resetModalMode() {
   editingTaskId = null;
-  document.getElementById("taskModalTitle").textContent = "Nova Tarefa";
-  document.getElementById("taskModalSave").textContent = "Criar tarefa";
-  document.getElementById("taskInput").readOnly = false;
-  document.getElementById("prioridade").disabled = false;
-  document.getElementById("estado").disabled = false;
-  document.getElementById("prazo").disabled = false;
+  const title = document.getElementById("taskModalTitle");
+  const saveButton = document.getElementById("taskModalSave");
+  const input = document.getElementById("taskInput");
+  const prioridade = document.getElementById("prioridade");
+  const estado = document.getElementById("estado");
+  const prazo = document.getElementById("prazo");
+
+  if (title) title.textContent = "Nova Tarefa";
+  if (saveButton) saveButton.textContent = "Criar tarefa";
+  if (input) input.readOnly = false;
+  if (prioridade) prioridade.disabled = false;
+  if (estado) estado.disabled = false;
+  if (prazo) prazo.disabled = false;
 }
 
 async function openModal() {
@@ -269,11 +287,20 @@ async function openModal() {
   }
 
   resetModalMode();
-  document.getElementById("taskInput").value = "";
-  document.getElementById("prazo").value = "";
+  const input = document.getElementById("taskInput");
+  const prazo = document.getElementById("prazo");
+  const modal = document.getElementById("taskModal");
+
+  if (!input || !prazo || !modal) {
+    console.error("Modal de tarefa nao encontrado.");
+    return;
+  }
+
+  input.value = "";
+  prazo.value = "";
   setSelectedOptions("equipesTarefa", []);
   setSelectedOptions("funcionariosTarefa", []);
-  document.getElementById("taskModal").classList.add("active");
+  modal.classList.add("active");
 }
 
 async function openAssignmentModal(task) {
@@ -288,16 +315,29 @@ async function openAssignmentModal(task) {
   }
 
   editingTaskId = task.id_tarefa;
-  document.getElementById("taskModalTitle").textContent = "Vinculos da tarefa";
-  document.getElementById("taskModalSave").textContent = "Salvar vinculos";
-  document.getElementById("taskInput").value = task.titulo || "";
-  document.getElementById("taskInput").readOnly = true;
-  document.getElementById("prioridade").value = task.prioridade || "MEDIA";
-  document.getElementById("prioridade").disabled = true;
-  document.getElementById("estado").value = task.estado || "PENDENTE";
-  document.getElementById("estado").disabled = true;
-  document.getElementById("prazo").value = task.prazo_entrega || "";
-  document.getElementById("prazo").disabled = true;
+  const title = document.getElementById("taskModalTitle");
+  const saveButton = document.getElementById("taskModalSave");
+  const input = document.getElementById("taskInput");
+  const prioridade = document.getElementById("prioridade");
+  const estado = document.getElementById("estado");
+  const prazo = document.getElementById("prazo");
+  const modal = document.getElementById("taskModal");
+
+  if (!title || !saveButton || !input || !prioridade || !estado || !prazo || !modal) {
+    console.error("Modal de tarefa incompleto.");
+    return;
+  }
+
+  title.textContent = "Vinculos da tarefa";
+  saveButton.textContent = "Salvar vinculos";
+  input.value = task.titulo || "";
+  input.readOnly = true;
+  prioridade.value = task.prioridade || "MEDIA";
+  prioridade.disabled = true;
+  estado.value = task.estado || "PENDENTE";
+  estado.disabled = true;
+  prazo.value = task.prazo_entrega || "";
+  prazo.disabled = true;
 
   setSelectedOptions("equipesTarefa", (task.equipes || []).map(equipe => equipe.id));
   setSelectedOptions(
@@ -305,15 +345,32 @@ async function openAssignmentModal(task) {
     (task.funcionarios || []).map(funcionario => funcionario.id_funcionario)
   );
 
-  document.getElementById("taskModal").classList.add("active");
+  modal.classList.add("active");
 }
 
 function closeModal() {
-  document.getElementById("taskModal").classList.remove("active");
+  const modal = document.getElementById("taskModal");
+
+  if (modal) {
+    modal.classList.remove("active");
+  }
+
   resetModalMode();
 }
 
+function bindTaskEvents() {
+  document.getElementById("openTaskModal")?.addEventListener("click", openModal);
+  document.getElementById("closeTaskModal")?.addEventListener("click", closeModal);
+  document.getElementById("cancelTaskModal")?.addEventListener("click", closeModal);
+  document.getElementById("taskModalSave")?.addEventListener("click", saveTask);
+}
+
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.saveTask = saveTask;
+
 document.addEventListener("DOMContentLoaded", () => {
+  bindTaskEvents();
   loadTaskOptions().catch(err => console.error(err));
   loadTasks();
 });

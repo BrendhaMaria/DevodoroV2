@@ -1,8 +1,8 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
 
-require_once "../php/conexao.php";
 require_once "../php/auth.php";
+require_once "../php/conexao.php";
 
 const AVATAR_PADRAO = "uploads/perfis/default.png";
 const AVATAR_MAX_BYTES = 5242880;

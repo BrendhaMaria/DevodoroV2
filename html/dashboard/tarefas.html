@@ -51,7 +51,7 @@
 
   <div class="actions">
     <input class="search" placeholder="Buscar tarefas...">
-    <button class="btn" onclick="openModal()">+ Nova Tarefa</button>
+    <button class="btn" id="openTaskModal" type="button">+ Nova Tarefa</button>
   </div>
 </div>
 
@@ -66,7 +66,7 @@
 
     <div class="modal-header">
       <h2 id="taskModalTitle">Nova Tarefa</h2>
-      <button class="close-btn" onclick="closeModal()">×</button>
+      <button class="close-btn" id="closeTaskModal" type="button">×</button>
     </div>
 
     <div class="modal-body">
@@ -74,34 +74,34 @@
       <label>Título</label>
       <input type="text" id="taskInput" placeholder="Digite o título">
 
-      <label>Prioridade</label>
+      <label for="prioridade">Prioridade</label>
       <select id="prioridade">
         <option value="BAIXA">Baixa</option>
         <option value="MEDIA">Média</option>
         <option value="ALTA">Alta</option>
       </select>
 
-      <label>Estado</label>
+      <label for="estado">Estado</label>
       <select id="estado">
         <option value="PENDENTE">Pendente</option>
         <option value="EM_ANDAMENTO">Em andamento</option>
         <option value="CONCLUIDA">Concluída</option>
       </select>
 
-      <label>Prazo de entrega</label>
+      <label for="prazo">Prazo de entrega</label>
       <input type="date" id="prazo">
 
-      <label>Equipes vinculadas</label>
+      <label for="equipesTarefa">Equipes vinculadas</label>
       <select id="equipesTarefa" multiple></select>
 
-      <label>FuncionÃ¡rios vinculados</label>
+      <label for="funcionariosTarefa">Funcionários vinculados</label>
       <select id="funcionariosTarefa" multiple></select>
 
     </div>
 
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" id="taskModalSave" onclick="saveTask()">Criar tarefa</button>
+      <button class="btn-cancel" id="cancelTaskModal" type="button">Cancelar</button>
+      <button class="btn-save" id="taskModalSave" type="button">Criar tarefa</button>
     </div>
 
   </div>

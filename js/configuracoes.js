@@ -3,7 +3,7 @@
   const API_EMPRESA = "../../api/empresa-info.php";
   const AVATAR_PADRAO = "../../uploads/perfis/default.png";
   const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
-  const { requestJson } = window.DevodoroApi;
+  const configuracoesRequestJson = window.DevodoroApi.requestJson;
 
   const elements = {
     nome: document.getElementById("nameInput"),
@@ -36,7 +36,7 @@
   }
 
   async function carregarPerfil() {
-    const perfil = await requestJson(API_PERFIL);
+    const perfil = await configuracoesRequestJson(API_PERFIL);
     atualizarCamposPerfil(perfil);
   }
 
@@ -46,7 +46,7 @@
     }
 
     try {
-      const empresa = await requestJson(API_EMPRESA);
+      const empresa = await configuracoesRequestJson(API_EMPRESA);
       elements.codigoEmpresa.value = empresa.codigo_acesso || "";
     } catch (err) {
       console.log("Erro ao carregar empresa", err);
@@ -110,7 +110,7 @@
     elements.salvarPerfil.disabled = true;
 
     try {
-      const data = await requestJson(API_PERFIL, {
+      const data = await configuracoesRequestJson(API_PERFIL, {
         method: "POST",
         body: formData
       });

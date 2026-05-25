@@ -3,14 +3,43 @@
     return data && data.error ? data.error : fallback;
   }
 
+  function mergeHeaders(baseHeaders, customHeaders) {
+    const headers = new Headers(baseHeaders);
+
+    new Headers(customHeaders || {}).forEach((value, key) => {
+      headers.set(key, value);
+    });
+
+    return headers;
+  }
+
   async function requestJson(url, options = {}) {
     const requestOptions = {
       cache: "no-store",
-      ...options
+      credentials: "same-origin",
+      ...options,
+      headers: mergeHeaders({
+        Accept: "application/json"
+      }, options.headers)
     };
 
     const res = await fetch(url, requestOptions);
-    const data = await res.json().catch(() => null);
+    const raw = await res.text();
+    let data = null;
+
+    if (raw.trim() !== "") {
+      try {
+        data = JSON.parse(raw);
+      } catch (err) {
+        console.error("Resposta nao JSON da API", {
+          url,
+          status: res.status,
+          body: raw.slice(0, 500)
+        });
+
+        throw new Error("A API retornou uma resposta invalida.");
+      }
+    }
 
     if (!res.ok || (data && data.success === false)) {
       throw new Error(getJsonError(data, "Erro ao processar requisicao."));
@@ -21,7 +50,7 @@
 
   function clearElement(element) {
     if (element) {
-      element.textContent = "";
+      element.replaceChildren();
     }
   }
 

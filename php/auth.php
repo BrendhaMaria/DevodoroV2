@@ -3,7 +3,58 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+if (!defined("DEVODORO_API_BOOTSTRAPPED")) {
+    define("DEVODORO_API_BOOTSTRAPPED", true);
+
+    ini_set("display_errors", 0);
+    error_reporting(E_ALL);
+
+    if (ob_get_level() === 0) {
+        ob_start();
+    }
+
+    set_error_handler(function ($severity, $message, $file, $line) {
+        if (!(error_reporting() & $severity)) {
+            return false;
+        }
+
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    });
+
+    register_shutdown_function(function () {
+        $error = error_get_last();
+
+        if (!$error) {
+            return;
+        }
+
+        $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+
+        if (!in_array($error["type"], $fatalTypes, true)) {
+            return;
+        }
+
+        if (!headers_sent()) {
+            header("Content-Type: application/json; charset=utf-8");
+            http_response_code(500);
+        }
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        echo json_encode([
+            "success" => false,
+            "error" => "Erro interno do servidor."
+        ], JSON_UNESCAPED_UNICODE);
+    });
+}
+
 function apiResponse($data, $status = 200) {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
     if (!headers_sent()) {
         header("Content-Type: application/json; charset=utf-8");
     }

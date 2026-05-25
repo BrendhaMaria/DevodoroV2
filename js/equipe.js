@@ -1,7 +1,15 @@
 const EQUIPES_API = "../../api/equipeApi.php";
 const EQUIPE_FUNCIONARIO_API = "../../api/equipeFuncionarioApi.php";
 const FUNCIONARIOS_DISPONIVEIS_API = "../../api/funcionariosDisponiveis.php";
-const { requestJson, clearElement, createButton } = window.DevodoroApi;
+const apiClient = window.DevodoroApi;
+
+if (!apiClient) {
+  throw new Error("DevodoroApi nao foi carregado antes de equipe.js.");
+}
+
+const equipeRequestJson = apiClient.requestJson;
+const equipeClearElement = apiClient.clearElement;
+const equipeCreateButton = apiClient.createButton;
 
 let selectedTeam = null;
 
@@ -32,7 +40,13 @@ function renderEmpty(container, text) {
 
 function renderTeams(teams) {
   const list = document.getElementById("teamList");
-  clearElement(list);
+
+  if (!list) {
+    console.error("Lista de equipes nao encontrada.");
+    return;
+  }
+
+  equipeClearElement(list);
 
   if (!Array.isArray(teams) || teams.length === 0) {
     renderEmpty(list, "Nenhuma equipe cadastrada.");
@@ -48,7 +62,13 @@ function renderTeams(teams) {
 
 function renderMembers(members) {
   const list = document.getElementById("members");
-  clearElement(list);
+
+  if (!list) {
+    console.error("Lista de membros nao encontrada.");
+    return;
+  }
+
+  equipeClearElement(list);
 
   if (!Array.isArray(members) || members.length === 0) {
     renderEmpty(list, "Nenhum membro nesta equipe.");
@@ -58,7 +78,7 @@ function renderMembers(members) {
   members.forEach(member => {
     const card = createCard(member.nome || "");
     card.appendChild(
-      createButton("Remover", () => removeFromTeam(member.id_funcionario))
+      equipeCreateButton("Remover", () => removeFromTeam(member.id_funcionario))
     );
 
     list.appendChild(card);
@@ -67,7 +87,13 @@ function renderMembers(members) {
 
 function renderAvailableEmployees(employees) {
   const list = document.getElementById("availableEmployees");
-  clearElement(list);
+
+  if (!list) {
+    console.error("Lista de funcionarios disponiveis nao encontrada.");
+    return;
+  }
+
+  equipeClearElement(list);
 
   if (!selectedTeam) {
     renderEmpty(list, "Selecione uma equipe.");
@@ -82,7 +108,7 @@ function renderAvailableEmployees(employees) {
   employees.forEach(employee => {
     const card = createCard(employee.nome || "");
     card.appendChild(
-      createButton("Adicionar", () => addToTeam(employee.id_funcionario))
+      equipeCreateButton("Adicionar", () => addToTeam(employee.id_funcionario))
     );
 
     list.appendChild(card);
@@ -91,7 +117,7 @@ function renderAvailableEmployees(employees) {
 
 async function loadTeams() {
   try {
-    const teams = await requestJson(EQUIPES_API);
+    const teams = await equipeRequestJson(EQUIPES_API);
     renderTeams(Array.isArray(teams) ? teams : []);
   } catch (err) {
     console.error(err);
@@ -112,14 +138,16 @@ async function selectTeam(id) {
 async function loadTeamMembers() {
   const list = document.getElementById("members");
 
+  if (!list) return;
+
   if (!selectedTeam) {
-    clearElement(list);
+    equipeClearElement(list);
     renderEmpty(list, "Selecione uma equipe.");
     return;
   }
 
   try {
-    const members = await requestJson(
+    const members = await equipeRequestJson(
       `${EQUIPE_FUNCIONARIO_API}?id_equipe=${encodeURIComponent(selectedTeam)}`
     );
 
@@ -138,7 +166,7 @@ async function loadAvailableEmployees() {
   }
 
   try {
-    const employees = await requestJson(
+    const employees = await equipeRequestJson(
       `${FUNCIONARIOS_DISPONIVEIS_API}?id_equipe=${encodeURIComponent(selectedTeam)}`
     );
 
@@ -156,7 +184,7 @@ async function createTeam() {
   if (!nome || nome.trim() === "") return;
 
   try {
-    await requestJson(EQUIPES_API, {
+    await equipeRequestJson(EQUIPES_API, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -175,7 +203,7 @@ async function addToTeam(idFuncionario) {
   if (!selectedTeam) return;
 
   try {
-    await requestJson(EQUIPE_FUNCIONARIO_API, {
+    await equipeRequestJson(EQUIPE_FUNCIONARIO_API, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -200,7 +228,7 @@ async function removeFromTeam(idFuncionario) {
   if (!selectedTeam) return;
 
   try {
-    await requestJson(
+    await equipeRequestJson(
       `${EQUIPE_FUNCIONARIO_API}?id_equipe=${encodeURIComponent(selectedTeam)}&id_funcionario=${encodeURIComponent(idFuncionario)}`,
       { method: "DELETE" }
     );
@@ -215,7 +243,14 @@ async function removeFromTeam(idFuncionario) {
   }
 }
 
+function bindTeamEvents() {
+  document.getElementById("createTeamButton")?.addEventListener("click", createTeam);
+}
+
+window.createTeam = createTeam;
+
 document.addEventListener("DOMContentLoaded", () => {
+  bindTeamEvents();
   renderAvailableEmployees([]);
   loadTeams();
 });

@@ -1,8 +1,8 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
 
-require_once "../php/conexao.php";
 require_once "../php/auth.php";
+require_once "../php/conexao.php";
 require_once "../php/equipes.php";
 
 $auth = requireAuth();
@@ -113,6 +113,11 @@ if ($method === "GET") {
 
 if ($method === "POST") {
     $data = readJsonInput();
+
+    if (!$data) {
+        apiError("JSON invalido ou vazio.", 400);
+    }
+
     $idEquipe = $data["id_equipe"] ?? null;
     $idFuncionario = $data["id_funcionario"] ?? null;
 

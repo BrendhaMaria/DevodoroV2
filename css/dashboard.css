@@ -78,6 +78,13 @@ body {
   justify-content: center;
 }
 
+.avatar-preview {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 10px;
+}
+
 /* MAIN */
 .main {
   flex: 1;
@@ -133,6 +140,22 @@ body {
   border-radius: 15px;
   position: relative;
   box-shadow: var(--card2);
+}
+
+.card--spaced {
+  margin-top: 20px;
+}
+
+.company-code-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.company-code-input {
+  flex: 1;
+  min-width: 220px;
 }
 
 .card h2 {
@@ -293,6 +316,13 @@ option{
   background: var(--input);
   color: var(--text);
 }
+
+.setting-item img.avatar-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
 #conf{
   color: var(--conf);
 }

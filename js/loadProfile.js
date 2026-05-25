@@ -1,6 +1,6 @@
 const PROFILE_API_URL = "../../api/perfilApi.php";
 const DEFAULT_PROFILE_AVATAR = "../../uploads/perfis/default.png";
-const { requestJson } = window.DevodoroApi;
+const devodoroProfileRequestJson = window.DevodoroApi.requestJson;
 
 function getProfileAvatarUrl(path) {
   if (!path) {
@@ -30,7 +30,7 @@ function renderSidebarAvatar(container, avatarUrl) {
 
 async function carregarPerfilSidebar() {
   try {
-    const data = await requestJson(PROFILE_API_URL);
+    const data = await devodoroProfileRequestJson(PROFILE_API_URL);
 
     document.querySelectorAll(".sidebarNome").forEach((el) => {
       el.textContent = data.nome || "";

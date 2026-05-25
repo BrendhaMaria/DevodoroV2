@@ -1,5 +1,5 @@
 const TASKS_API_URL = "../../api/tarefasApi.php";
-const { requestJson } = window.DevodoroApi;
+const dashboardRequestJson = window.DevodoroApi.requestJson;
 
 let timer;
 let time = 25 * 60;
@@ -85,8 +85,8 @@ function renderRecentTasks(tasks) {
 async function loadDashboardTasks() {
   try {
     const [summary, tasks] = await Promise.all([
-      requestJson(`${TASKS_API_URL}?resumo=1`),
-      requestJson(TASKS_API_URL)
+      dashboardRequestJson(`${TASKS_API_URL}?resumo=1`),
+      dashboardRequestJson(TASKS_API_URL)
     ]);
 
     setCardValue("total", summary.total || 0);
