@@ -1,31 +1,57 @@
 <?php
-include '../php/conexao.php';
-session_start();
+header("Content-Type: application/json; charset=utf-8");
 
-header("Content-Type: application/json");
+require_once "../php/auth.php";
+require_once "../php/conexao.php";
+require_once "../php/equipes.php";
 
-$id_empresa = $_SESSION['id_empresa'];
-$id_equipe = $_GET['id_equipe'] ?? null;
+$auth = requireAuth();
+$idEmpresa = $auth["id_empresa"];
+$method = $_SERVER["REQUEST_METHOD"];
+$idEquipe = $_GET["id_equipe"] ?? null;
 
-if (!$id_empresa || !$id_equipe) {
-    echo json_encode([]);
-    exit;
+function listarFuncionariosDisponiveis($conn, $idEmpresa, $idEquipe) {
+    $stmt = $conn->prepare("
+        SELECT f.id_funcionario, f.nome, f.email
+        FROM funcionario f
+        WHERE f.id_empresa = ?
+          AND f.ativo = 1
+          AND NOT EXISTS (
+              SELECT 1
+              FROM equipe_funcionario ef
+              WHERE ef.id_equipe = ?
+                AND ef.id_funcionario = f.id_funcionario
+          )
+        ORDER BY f.nome
+    ");
+
+    if (!$stmt) {
+        apiError("Erro ao preparar consulta.", 500);
+    }
+
+    $stmt->bind_param("ii", $idEmpresa, $idEquipe);
+
+    if (!$stmt->execute()) {
+        apiError("Erro ao listar funcionarios.", 500);
+    }
+
+    $funcionarios = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    return $funcionarios;
 }
 
-$stmt = $conn->prepare("
-    SELECT id_funcionario, nome, email
-    FROM funcionario
-    WHERE id_empresa = ?
-    AND id_funcionario NOT IN (
-        SELECT id_funcionario
-        FROM equipe_funcionario
-        WHERE id_equipe = ?
-    )
-");
+apiRequireMethod("GET");
 
-$stmt->bind_param("ii", $id_empresa, $id_equipe);
-$stmt->execute();
+if (!apiPositiveId($idEquipe)) {
+    apiError("id_equipe obrigatorio.", 400);
+}
 
-$result = $stmt->get_result();
+$idEquipe = (int) $idEquipe;
 
-echo json_encode($result->fetch_all(MYSQLI_ASSOC));
+if (!equipePertenceEmpresa($conn, $idEquipe, $idEmpresa)) {
+    apiError("Equipe nao encontrada.", 404);
+}
+
+apiResponse(listarFuncionariosDisponiveis($conn, $idEmpresa, $idEquipe));
+?>

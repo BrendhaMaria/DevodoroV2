@@ -1,322 +1,223 @@
 <?php
+header("Content-Type: application/json; charset=utf-8");
 
-session_start();
+require_once "../php/auth.php";
+require_once "../php/conexao.php";
 
-header("Content-Type: application/json");
+const AVATAR_PADRAO = "uploads/perfis/default.png";
+const AVATAR_MAX_BYTES = 5242880;
 
-include "../php/conexao.php";
+function contextoUsuarioAutenticado() {
+    $auth = requireAuth();
 
-/* =========================
-   VERIFICA LOGIN
-========================= */
+    if ($auth["tipo"] === "empresa") {
+        return [
+            "tabela" => "empresa",
+            "campoId" => "id_empresa",
+            "id" => $auth["id_empresa"],
+            "tipo" => "empresa"
+        ];
+    }
 
-if (!isset($_SESSION['tipo'])) {
-
-    echo json_encode([
-        "error" => "Usuário não autenticado"
-    ]);
-
-    exit;
+    return [
+        "tabela" => "funcionario",
+        "campoId" => "id_funcionario",
+        "id" => $auth["id_funcionario"],
+        "tipo" => "funcionario"
+    ];
 }
 
-$tipo = $_SESSION['tipo'];
-
-/* =========================
-   DEFINE TABELA
-========================= */
-
-if ($tipo === "empresa") {
-
-    $tabela = "empresa";
-    $campoId = "id_empresa";
-    $id = $_SESSION['id_empresa'];
-
-} else {
-
-    $tabela = "funcionario";
-    $campoId = "id_funcionario";
-    $id = $_SESSION['id_funcionario'];
-}
-
-/* =========================
-   GET → BUSCAR PERFIL
-========================= */
-
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-
-    $sql = "
-        SELECT
-            nome,
-            email,
-            foto_perfil
-        FROM $tabela
-        WHERE $campoId = ?
-    ";
-
-    $stmt = $conn->prepare($sql);
+function buscarPerfil($conn, $ctx) {
+    $stmt = $conn->prepare("
+        SELECT nome, email, foto_perfil
+        FROM {$ctx["tabela"]}
+        WHERE {$ctx["campoId"]} = ?
+        LIMIT 1
+    ");
 
     if (!$stmt) {
-        die(json_encode([
-            "error" => $conn->error
-        ]));
+        apiError("Erro ao preparar consulta.", 500);
     }
 
-    $stmt->bind_param("i", $id);
+    $stmt->bind_param("i", $ctx["id"]);
 
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        apiError("Erro ao buscar perfil.", 500);
+    }
 
-    $result = $stmt->get_result();
+    $perfil = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-    $usuario = $result->fetch_assoc();
+    if (!$perfil) {
+        apiError("Usuario nao encontrado.", 404);
+    }
 
-    echo json_encode($usuario);
-
-    exit;
+    return $perfil;
 }
 
-/* =========================
-   POST → ATUALIZAR PERFIL
-========================= */
+function emailJaUsado($conn, $ctx, $email) {
+    $stmt = $conn->prepare("
+        SELECT {$ctx["campoId"]}
+        FROM {$ctx["tabela"]}
+        WHERE email = ? AND {$ctx["campoId"]} <> ?
+        LIMIT 1
+    ");
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    $nome = trim($_POST['nome'] ?? '');
-
-    if (!$nome) {
-
-        echo json_encode([
-            "error" => "Nome obrigatório"
-        ]);
-
-        exit;
+    if (!$stmt) {
+        apiError("Erro ao validar email.", 500);
     }
 
-    $caminhoImagem = null;
+    $stmt->bind_param("si", $email, $ctx["id"]);
 
-    /* =========================
-       UPLOAD FOTO
-    ========================= */
-
-    if (
-        isset($_FILES['foto']) &&
-        $_FILES['foto']['error'] === 0
-    ) {
-
-        $arquivo = $_FILES['foto'];
-
-        /* =========================
-        LIMITE DE TAMANHO
-        ========================= */
-
-        $maxSize = 5 * 1024 * 1024;
-
-        if ($arquivo["size"] > $maxSize) {
-
-            echo json_encode([
-                "error" => "Imagem muito grande. Máximo 5MB."
-            ]);
-
-            exit;
-        }
-
-        /* =========================
-        MIME TYPE REAL
-        ========================= */
-
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-
-        $mime = finfo_file(
-            $finfo,
-            $arquivo["tmp_name"]
-        );
-
-        finfo_close($finfo);
-
-        $mimesPermitidos = [
-            "image/png" => "png",
-            "image/jpeg" => "jpg"
-        ];
-
-        if (!isset($mimesPermitidos[$mime])) {
-
-            echo json_encode([
-                "error" => "Formato inválido."
-            ]);
-
-            exit;
-        }
-
-        /* =========================
-        VERIFICA IMAGEM REAL
-        ========================= */
-
-        $imageInfo = getimagesize(
-            $arquivo["tmp_name"]
-        );
-
-        if ($imageInfo === false) {
-
-            echo json_encode([
-                "error" => "Arquivo inválido."
-            ]);
-
-            exit;
-        }
-
-        /* =========================
-        NOME ÚNICO SEGURO
-        ========================= */
-
-        $ext = $mimesPermitidos[$mime];
-
-        $nomeArquivo =
-            bin2hex(random_bytes(16))
-            . "."
-            . $ext;
-
-        $diretorio = "../uploads/perfis/";
-
-        if (!is_dir($diretorio)) {
-
-            mkdir($diretorio, 0777, true);
-        }
-
-        $destino = $diretorio . $nomeArquivo;
-
-        /* =========================
-        BUSCA FOTO ANTIGA
-        ========================= */
-
-        $sqlFoto = "
-            SELECT foto_perfil
-            FROM $tabela
-            WHERE $campoId = ?
-        ";
-
-        $stmtFoto = $conn->prepare($sqlFoto);
-
-        $stmtFoto->bind_param("i", $id);
-
-        $stmtFoto->execute();
-
-        $resultFoto = $stmtFoto->get_result();
-
-        $usuarioAtual = $resultFoto->fetch_assoc();
-
-        $fotoAntiga =
-            $usuarioAtual['foto_perfil'] ?? null;
-
-        /* =========================
-        MOVE ARQUIVO
-        ========================= */
-
-        if (!move_uploaded_file(
-            $arquivo["tmp_name"],
-            $destino
-        )) {
-
-            echo json_encode([
-                "error" => "Erro ao salvar imagem."
-            ]);
-
-            exit;
-        }
-
-        /* =========================
-        REMOVE FOTO ANTIGA
-        ========================= */
-
-        if (
-            $fotoAntiga &&
-            $fotoAntiga !== "uploads/perfis/default.png" &&
-            file_exists("../" . $fotoAntiga)
-        ) {
-
-            unlink("../" . $fotoAntiga);
-        }
-
-        $caminhoImagem =
-            "uploads/perfis/" . $nomeArquivo;
+    if (!$stmt->execute()) {
+        apiError("Erro ao validar email.", 500);
     }
 
-    /* =========================
-       UPDATE COM FOTO
-    ========================= */
+    $existe = (bool) $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-    if ($caminhoImagem) {
-
-        $sql = "
-            UPDATE $tabela
-            SET
-                nome = ?,
-                foto_perfil = ?
-            WHERE $campoId = ?
-        ";
-
-        $stmt = $conn->prepare($sql);
-
-        if (!$stmt) {
-            die(json_encode([
-                "error" => $conn->error
-            ]));
-        }
-
-        $stmt->bind_param(
-            "ssi",
-            $nome,
-            $caminhoImagem,
-            $id
-        );
-
-    }
-
-    /* =========================
-       UPDATE SEM FOTO
-    ========================= */
-
-    else {
-
-        $sql = "
-            UPDATE $tabela
-            SET nome = ?
-            WHERE $campoId = ?
-        ";
-
-        $stmt = $conn->prepare($sql);
-
-        if (!$stmt) {
-            die(json_encode([
-                "error" => $conn->error
-            ]));
-        }
-
-        $stmt->bind_param(
-            "si",
-            $nome,
-            $id
-        );
-    }
-
-    $stmt->execute();
-
-    /* =========================
-       ATUALIZA SESSÃO
-    ========================= */
-
-    $_SESSION['nome'] = $nome;
-
-    echo json_encode([
-        "success" => true,
-        "message" => "Perfil atualizado"
-    ]);
-
-    exit;
+    return $existe;
 }
 
-/* =========================
-   MÉTODO INVÁLIDO
-========================= */
+function validarUploadAvatar($arquivo) {
+    if (!isset($arquivo) || $arquivo["error"] === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
 
-echo json_encode([
-    "error" => "Método inválido"
+    if ($arquivo["error"] !== UPLOAD_ERR_OK) {
+        apiError("Erro no envio da imagem.", 400);
+    }
+
+    if ($arquivo["size"] > AVATAR_MAX_BYTES) {
+        apiError("Imagem muito grande. Maximo 5MB.", 400);
+    }
+
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $arquivo["tmp_name"]);
+    finfo_close($finfo);
+
+    $mimesPermitidos = [
+        "image/png" => "png",
+        "image/jpeg" => "jpg"
+    ];
+
+    if (!isset($mimesPermitidos[$mime]) || getimagesize($arquivo["tmp_name"]) === false) {
+        apiError("Formato de imagem invalido.", 400);
+    }
+
+    return $mimesPermitidos[$mime];
+}
+
+function salvarAvatar($arquivo, $ext) {
+    if ($ext === null) {
+        return null;
+    }
+
+    $diretorio = "../uploads/perfis/";
+
+    if (!is_dir($diretorio) && !mkdir($diretorio, 0755, true)) {
+        apiError("Erro ao preparar diretorio de upload.", 500);
+    }
+
+    $nomeArquivo = bin2hex(random_bytes(16)) . "." . $ext;
+    $destino = $diretorio . $nomeArquivo;
+
+    if (!move_uploaded_file($arquivo["tmp_name"], $destino)) {
+        apiError("Erro ao salvar imagem.", 500);
+    }
+
+    return "uploads/perfis/" . $nomeArquivo;
+}
+
+function removerAvatarAntigo($fotoAntiga) {
+    if (!$fotoAntiga || $fotoAntiga === AVATAR_PADRAO) {
+        return;
+    }
+
+    $arquivo = realpath("../" . $fotoAntiga);
+    $diretorioUploads = realpath("../uploads/perfis");
+
+    if ($arquivo && $diretorioUploads && strpos($arquivo, $diretorioUploads) === 0 && is_file($arquivo)) {
+        unlink($arquivo);
+    }
+}
+
+$ctx = contextoUsuarioAutenticado();
+
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    apiResponse(buscarPerfil($conn, $ctx));
+}
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    apiError("Metodo nao suportado.", 405, ["method" => $_SERVER["REQUEST_METHOD"]]);
+}
+
+$nome = trim($_POST["nome"] ?? "");
+$email = trim($_POST["email"] ?? "");
+
+if ($nome === "") {
+    apiError("Nome obrigatorio.", 400);
+}
+
+if ($email === "" || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    apiError("Email invalido.", 400);
+}
+
+if (emailJaUsado($conn, $ctx, $email)) {
+    apiError("Este email ja esta em uso.", 409);
+}
+
+$perfilAtual = buscarPerfil($conn, $ctx);
+$extAvatar = validarUploadAvatar($_FILES["foto"] ?? null);
+$novoAvatar = salvarAvatar($_FILES["foto"] ?? null, $extAvatar);
+
+if ($novoAvatar) {
+    $stmt = $conn->prepare("
+        UPDATE {$ctx["tabela"]}
+        SET nome = ?, email = ?, foto_perfil = ?
+        WHERE {$ctx["campoId"]} = ?
+    ");
+
+    if (!$stmt) {
+        unlink("../" . $novoAvatar);
+        apiError("Erro ao preparar atualizacao.", 500);
+    }
+
+    $stmt->bind_param("sssi", $nome, $email, $novoAvatar, $ctx["id"]);
+} else {
+    $stmt = $conn->prepare("
+        UPDATE {$ctx["tabela"]}
+        SET nome = ?, email = ?
+        WHERE {$ctx["campoId"]} = ?
+    ");
+
+    if (!$stmt) {
+        apiError("Erro ao preparar atualizacao.", 500);
+    }
+
+    $stmt->bind_param("ssi", $nome, $email, $ctx["id"]);
+}
+
+if (!$stmt->execute()) {
+    if ($novoAvatar) {
+        unlink("../" . $novoAvatar);
+    }
+
+    apiError("Erro ao atualizar perfil.", 500);
+}
+
+$stmt->close();
+
+if ($novoAvatar) {
+    removerAvatarAntigo($perfilAtual["foto_perfil"] ?? null);
+}
+
+$_SESSION["nome"] = $nome;
+$_SESSION["email"] = $email;
+
+apiResponse([
+    "success" => true,
+    "message" => "Perfil atualizado.",
+    "perfil" => buscarPerfil($conn, $ctx)
 ]);
+?>

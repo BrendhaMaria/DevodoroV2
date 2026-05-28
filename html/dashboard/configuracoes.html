@@ -1,26 +1,34 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../../css/dashboard.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Configuracoes</title>
+  <script>
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <script src="../../js/authGuard.js"></script>
 </head>
 <body>
-<div class="sidebar">
-  <div>
-    <div class="logo">DEVODORO</div>
+  <div class="sidebar">
+    <div>
+      <div class="logo">DEVODORO</div>
 
-    <div class="nav">
-      <a href="dashboard.html">Dashboard</a>
-      <a href="tarefas.html">Tarefas</a>
-      <a href="equipe.html">Equipe</a>
-      <a href="configuracoes.html" class="active">Configurações</a>
+      <div class="nav">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="tarefas.html">Tarefas</a>
+        <a href="equipe.html">Equipe</a>
+        <a href="configuracoes.html" class="active">Configuracoes</a>
+      </div>
     </div>
-  </div>
 
     <div class="user">
-
       <div class="avatar sidebarAvatar"></div>
 
       <div>
@@ -28,15 +36,18 @@
         <p>Empresa</p>
       </div>
 
+      <form class="logout-form" method="POST" action="../../php/logout.php">
+        <button class="logout-btn" type="submit">Sair</button>
+      </form>
     </div>
+  </div>
 
-</div>
-
-<div class="main" id="app">
+  <div class="main" id="app">
     <div class="header">
-      <div class="title" id="conf">Configurações</div>
+      <div class="title" id="conf">Configuracoes</div>
     </div>
 
+    <!--Alterações de Brendha-->
     <div class="card">
     <h2>Aparência</h2>
     <div class="modoescuro">
@@ -89,47 +100,7 @@
 <button class="btn" id="saveProfile">
   Salvar
 </button>
-<div class="setting-item">
-      <label>Nome</label>
-      <input type="text" id="nameInput" placeholder="Seu nome">
-      <label>Email</label>
-      <input type="email" id="emailInput" placeholder="seu@email.com">
-    </div>
-<<<<<<< HEAD
 
-    <div class="setting-item">
-
-      <label>Avatar</label>
-
-      <img
-        id="previewAvatar"
-        src="../../uploads/perfis/default.png"
-        width="100"
-        height="100"
-        style="
-          border-radius:50%;
-          object-fit:cover;
-          display:block;
-          margin-bottom:10px;
-        "
-      >
-
-      <input
-        type="file"
-        id="avatarInput"
-        accept=".png,.jpg,.jpeg"
-      >
-
-    </div>
-
-<br>
-
-<button class="btn" id="saveProfile">
-  Salvar
-</button>
-
-=======
->>>>>>> css-config
   </div>
 
 <div class="card" style="margin-top:20px;">
@@ -163,185 +134,12 @@
   </div>
 </div>
 
-</div>    
+</div>
 
-<script>
+  <script src="../../js/apiClient.js"></script>
+  <script src="../../js/loadProfile.js"></script>
+  <script src="../../js/modoescuro.js"></script>
+  <script src="../../js/configuracoes.js"></script>
 
-async function carregarEmpresa() {
-    try {
-        const res = await fetch("../../api/empresa-info.php");
-        const data = await res.json();
-
-        if (data.error) {
-            console.log(data.error);
-            return;
-        }
-
-        document.getElementById("codigoEmpresa").value =
-            data.codigo_acesso;
-
-        document.getElementById("nameInput").value =
-            data.nome;
-
-        document.getElementById("emailInput").value =
-            data.email;
-
-    } catch (err) {
-        console.log("Erro ao carregar empresa", err);
-    }
-}
-
-function mostrarCodigo() {
-    const input = document.getElementById("codigoEmpresa");
-    const btn = document.getElementById("mostrarCodigoBtn");
-
-    if (input.type === "password") {
-        input.type = "text";
-        btn.textContent = "Ocultar Código";
-
-    } else {
-        input.type = "password";
-        btn.textContent = "Mostrar Código";
-    }
-}
-
-function copiarCodigo() {
-    const input = document.getElementById("codigoEmpresa");
-
-    input.select();
-    input.setSelectionRange(0, 99999);
-
-    navigator.clipboard.writeText(input.value);
-
-    alert("Código copiado");
-}
-
-carregarEmpresa();
-</script>
-
-<script>
-
-/* =========================
-   CARREGA PERFIL
-========================= */
-
-async function carregarPerfil() {
-
-    try {
-
-        const res =
-            await fetch("../../api/perfilApi.php");
-
-        const data = await res.json();
-
-        if (data.error) {
-            console.log(data.error);
-            return;
-        }
-
-        document.getElementById("nameInput").value =
-            data.nome || "";
-
-        document.getElementById("emailInput").value =
-            data.email || "";
-
-        const avatar =
-            document.getElementById("previewAvatar");
-
-        avatar.src = data.foto_perfil
-            ? "../../" + data.foto_perfil
-            : "../../uploads/perfis/default.png";
-
-    } catch (err) {
-
-       console.log(err);
-    }
-}
-/* =========================
-   PREVIEW IMAGEM
-========================= */
-
-document
-.getElementById("avatarInput")
-.addEventListener("change", function(e) {
-
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(event) {
-
-        document.getElementById(
-            "previewAvatar"
-        ).src = event.target.result;
-    };
-
-    reader.readAsDataURL(file);
-});
-
-/* =========================
-   SALVAR PERFIL
-========================= */
-
-document
-.getElementById("saveProfile")
-.addEventListener("click", async () => {
-
-    const nome =
-        document.getElementById("nameInput").value;
-
-    const foto =
-        document.getElementById("avatarInput").files[0];
-
-    const formData = new FormData();
-
-    formData.append("nome", nome);
-
-    if (foto) {
-        formData.append("foto", foto);
-    }
-
-    try {
-
-        const res = await fetch(
-            "../../api/perfilApi.php",
-            {
-                method: "POST",
-                body: formData
-            }
-        );
-
-        const data = await res.json();
-
-        if (data.error) {
-
-            alert(data.error);
-            return;
-        }
-
-        alert(data.message);
-
-        carregarPerfil();
-
-    } catch (err) {
-
-        console.log(err);
-
-        alert("Erro ao salvar perfil");
-    }
-});
-
-/* =========================
-   INIT
-========================= */
-
-carregarPerfil();
-
-</script>
-
-<script src="../../js/loadProfile.js"></script>
-<script src="../../js/modoescuro.js"></script>
 </body>
 </html>

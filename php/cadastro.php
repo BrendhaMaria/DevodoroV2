@@ -2,87 +2,121 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include "conexao.php";
+header("Content-Type: text/html; charset=utf-8");
 
-$nome  = $_POST['nome'] ?? null;
-$email = $_POST['email'] ?? null;
-$senha = isset($_POST['senha']) ? password_hash($_POST['senha'], PASSWORD_DEFAULT) : null;
-$tipo  = $_POST['tipo'] ?? null;
+require_once "conexao.php";
 
-/* =========================
-   VALIDAÇÃO BÁSICA
-========================= */
+$nome = trim($_POST['nome'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$senhaTexto = $_POST['senha'] ?? '';
+$tipo = $_POST['tipo'] ?? '';
 
-if (!$nome || !$email || !$senha || !$tipo) {
+if ($nome === '' || $email === '' || $senhaTexto === '' || $tipo === '') {
     die("Dados incompletos");
 }
 
-/* =========================
-   CADASTRO EMPRESA
-========================= */
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    die("Email inválido");
+}
+
+if (!in_array($tipo, ["empresa", "funcionario"], true)) {
+    die("Tipo de usuário inválido");
+}
+
+$senha = password_hash($senhaTexto, PASSWORD_DEFAULT);
 
 if ($tipo === "empresa") {
+    $codigo = null;
 
-    // gera código único simples
-    $codigo = substr(md5(uniqid()), 0, 8);
+    for ($i = 0; $i < 5; $i++) {
+        $codigoTentativa = bin2hex(random_bytes(4));
 
-    $sql = "INSERT INTO empresa (nome, email, senha, codigo_acesso)
-            VALUES (?, ?, ?, ?)";
+        $check = $conn->prepare("
+            SELECT id_empresa
+            FROM empresa
+            WHERE codigo_acesso = ?
+        ");
 
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) die("Erro SQL: " . $conn->error);
+        if (!$check) {
+            die("Erro SQL: " . $conn->error);
+        }
+
+        $check->bind_param("s", $codigoTentativa);
+        $check->execute();
+
+        if ($check->get_result()->num_rows === 0) {
+            $codigo = $codigoTentativa;
+            break;
+        }
+    }
+
+if (!$codigo) {
+        die("Não foi possível gerar código da empresa");
+    }
+
+    $stmt = $conn->prepare("
+        INSERT INTO empresa (nome, email, senha, codigo_acesso)
+        VALUES (?, ?, ?, ?)
+    ");
+
+    if (!$stmt) {
+        die("Erro SQL: " . $conn->error);
+    }
 
     $stmt->bind_param("ssss", $nome, $email, $senha, $codigo);
 
     if ($stmt->execute()) {
-        echo "Empresa cadastrada. Código de acesso: " . $codigo;
-    } else {
-        echo "Erro: " . $stmt->error;
+        echo "Empresa cadastrada. Código de acesso: " . htmlspecialchars($codigo, ENT_QUOTES, "UTF-8");
+        exit;
     }
 
+    die("Erro: " . $stmt->error);
 }
 
-/* =========================
-   CADASTRO FUNCIONÁRIO
-========================= */
+$codigo = trim($_POST['codigo_empresa'] ?? '');
 
-else {
-
-    $codigo = $_POST['codigo_empresa'] ?? null;
-
-    if (!$codigo) {
-        die("Código da empresa é obrigatório");
-    }
-
-    // busca empresa pelo código
-    $sql = "SELECT id_empresa FROM empresa WHERE codigo_acesso = ?";
-    $stmt = $conn->prepare($sql);
-
-    if (!$stmt) die("Erro SQL: " . $conn->error);
-
-    $stmt->bind_param("s", $codigo);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows !== 1) {
-        die("Código da empresa inválido");
-    }
-
-    $empresa = $result->fetch_assoc();
-    $id_empresa = $empresa['id_empresa'];
-
-    // cadastra funcionário vinculado
-    $sql = "INSERT INTO funcionario (nome, email, senha, id_empresa)
-            VALUES (?, ?, ?, ?)";
-
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) die("Erro SQL: " . $conn->error);
-
-    $stmt->bind_param("sssi", $nome, $email, $senha, $id_empresa);
-
-    if ($stmt->execute()) {
-        echo "Funcionário cadastrado com sucesso";
-    } else {
-        echo "Erro: " . $stmt->error;
-    }
+if ($codigo === '') {
+    die("Código da empresa é obrigatório");
 }
+
+$stmt = $conn->prepare("
+    SELECT id_empresa
+    FROM empresa
+    WHERE codigo_acesso = ?
+    LIMIT 1
+");
+
+if (!$stmt) {
+    die("Erro SQL: " . $conn->error);
+}
+
+$stmt->bind_param("s", $codigo);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+if ($result->num_rows !== 1) {
+    die("Código da empresa inválido");
+}
+
+$empresa = $result->fetch_assoc();
+$id_empresa = (int) $empresa['id_empresa'];
+
+$stmt = $conn->prepare("
+    INSERT INTO funcionario (nome, email, senha, id_empresa)
+    VALUES (?, ?, ?, ?)
+");
+
+if (!$stmt) {
+    die("Erro SQL: " . $conn->error);
+}
+
+$stmt->bind_param("sssi", $nome, $email, $senha, $id_empresa);
+
+if ($stmt->execute()) {
+    echo "Funcionário cadastrado com sucesso";
+    exit;
+}
+
+die("Erro: " . $stmt->error);
+?>

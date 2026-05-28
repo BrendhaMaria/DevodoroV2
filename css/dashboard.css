@@ -1,3 +1,4 @@
+@charset "UTF-8";
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
 * {
@@ -64,6 +65,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .avatar {
@@ -74,6 +76,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.avatar-preview {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 10px;
 }
 
 /* MAIN */
@@ -134,6 +143,22 @@ body {
   box-shadow: var(--card2);
 }
 
+.card--spaced {
+  margin-top: 20px;
+}
+
+.company-code-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.company-code-input {
+  flex: 1;
+  min-width: 220px;
+}
+
 .card h2 {
   font-size: 20px;
   margin-top: 10px;
@@ -152,6 +177,27 @@ body {
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.task-content p {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .badge {
@@ -192,6 +238,14 @@ option{
   font-weight: 600;
   font-size: 1em;
   margin-left: 15px;
+}
+.btn-link {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 5px 8px;
 }
 #total{
   box-shadow:0 0 5dvb rgba(194, 3, 114, 0.548);
@@ -267,6 +321,13 @@ display: flex;
   background: var(--input);
   color: var(--text);
 }
+
+.setting-item img.avatar-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
 #conf{
   color: var(--conf);
 }
@@ -382,6 +443,10 @@ display: flex;
   outline: none;
 }
 
+.modal-body select[multiple] {
+  min-height: 96px;
+}
+
 .dark .modal-body input,
 .dark .modal-body select {
   background: #2b2b2b;
@@ -427,4 +492,29 @@ label.upload-btn{
 
 label.upload-btn:hover{
   background: #574bdb;
+}
+
+.logout-form {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.logout-btn:hover {
+  background: var(--side-bg);
+  color: var(--text);
+}
+
+.hidden-input {
+  display: none;
 }

@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script>
-  if (localStorage.getItem("theme") === "dark") {
-    document.documentElement.classList.add("dark");
-  }
-</script>
-    <link rel="stylesheet" href="../../css/dashboard.css">
-    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Equipes</title>
+  <script>
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
+  </script>
+  <script src="../../js/authGuard.js"></script>
+  <link rel="stylesheet" href="../../css/dashboard.css">
 </head>
 <body>
 
@@ -26,136 +29,43 @@
     </div>
   </div>
 
-     <div class="user">
+  <div class="user">
+    <div class="avatar sidebarAvatar"></div>
 
-      <div class="avatar sidebarAvatar"></div>
-
-      <div>
-        <strong class="sidebarNome"></strong>
-        <p>Empresa</p>
-      </div>
-
+    <div>
+      <strong class="sidebarNome"></strong>
+      <p>Empresa</p>
     </div>
 
+    <form class="logout-form" method="POST" action="../../php/logout.php">
+      <button class="logout-btn" type="submit">Sair</button>
+    </form>
+  </div>
 </div>
 
 <div class="main" id="app">
-
-    <div class="header">
-       <div class="actions">
-        <div class="title">Equipes</div>
-      <button class="btn" onclick="createTeam()">Criar equipe</button>
-        <input class="search" placeholder="Buscar membros..."> 
-      </div>
-      
+  <div class="header">
+    <div class="actions">
+      <div class="title">Equipes</div>
+      <button class="btn" id="createTeamButton" type="button">Criar equipe</button>
+      <input class="search" placeholder="Buscar membros...">
     </div>
+  </div>
 
-    <div id="teamList"></div>
-    <hr>
+  <div id="teamList"></div>
+  <hr>
 
-    <div id="teamDetails">
-      <h3>Equipe selecionada</h3>
+  <div id="teamDetails">
+    <h3>Equipe selecionada</h3>
+    <div id="members"></div>
 
-      <div id="members"></div>
-
-      <h4>Adicionar funcionário</h4>
-      <div id="availableEmployees"></div>
-    </div>
+    <h4>Adicionar funcionário</h4>
+    <div id="availableEmployees"></div>
+  </div>
 </div>
 
-<script>
-let selectedTeam = null;
-
-async function loadTeams() {
-    const res = await fetch("../../api/equipeApi.php");
-    const data = await res.json();
-
-    document.getElementById("teamList").innerHTML =
-        data.map(t => `
-            <div class="card" onclick="selectTeam(${t.id})">
-                ${t.nome}
-            </div>
-        `).join("");
-}
-
-async function selectTeam(id) {
-    selectedTeam = id;
-
-    loadTeamMembers();
-    loadAvailableEmployees();
-}
-
-async function loadTeamMembers() {
-    const res = await fetch(`../../api/equipeFuncionarioApi.php?id_equipe=${selectedTeam}`);
-    const data = await res.json();
-
-    document.getElementById("members").innerHTML =
-        data.map(f => `
-            <div class="card">
-                ${f.nome}
-                <button onclick="removeFromTeam(${f.id_funcionario})">Remover</button>
-            </div>
-        `).join("");
-}
-
-async function removeFromTeam(idFuncionario) {
-    await fetch(
-        `../../api/equipeFuncionarioApi.php?id_equipe=${selectedTeam}&id_funcionario=${idFuncionario}`,
-        {
-            method: "DELETE"
-        }
-    );
-
-    loadTeamMembers();
-    loadAvailableEmployees();
-}
-
-async function loadAvailableEmployees() {
-    const res = await fetch(`../../api/funcionariosDisponiveis.php?id_equipe=${selectedTeam}`);
-    const data = await res.json();
-
-    document.getElementById("availableEmployees").innerHTML =
-        data.map(f => `
-            <div class="card">
-                ${f.nome}
-                <button onclick="addToTeam(${f.id_funcionario})">Adicionar</button>
-            </div>
-        `).join("");
-}
-
-async function createTeam() {
-
-    const nome = prompt("Nome da equipe:");
-
-    if (!nome) return;
-
-    await fetch("../../api/equipeApi.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ nome })
-    });
-
-    loadTeams();
-}
-
-async function addToTeam(idFuncionario) {
-    await fetch("../../api/equipeFuncionarioApi.php", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            id_equipe: selectedTeam,
-            id_funcionario: idFuncionario
-        })
-    });
-
-    loadTeamMembers();
-}
-
-loadTeams();
-</script>
-
+<script src="../../js/apiClient.js"></script>
 <script src="../../js/loadProfile.js"></script>
+<script src="../../js/equipe.js"></script>
 </body>
 </html>

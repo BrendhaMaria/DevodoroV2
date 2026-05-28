@@ -2,6 +2,10 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Devodoro</title>
 <script>
   if (localStorage.getItem("theme") === "dark") {
@@ -9,7 +13,7 @@
   }
 </script>
 <link rel="stylesheet" href="../../css/dashboard.css">
-
+<script src="../../js/authGuard.js"></script>
 </head>
 
 <body>
@@ -27,7 +31,6 @@
   </div>
 
   <div class="user">
-
     <div class="avatar sidebarAvatar"></div>
 
     <div>
@@ -35,45 +38,45 @@
       <p>Empresa</p>
     </div>
 
+    <form class="logout-form" method="POST" action="../../php/logout.php">
+      <button class="logout-btn" type="submit">Sair</button>
+    </form>
   </div>
-
 </div>
 
 <div class="main" id="app">
   <div class="header">
-      <div class="title">Dashboard</div>
-     
-    </div>
-
-    <div class="cards">
-      <div class="card" id="total"><p>Total</p><h2></h2></div>
-      <div class="card" id="concluidas"><p>Concluídas</p><h2></h2></div>
-      <div class="card" id="emprogresso"><p>Em progresso</p><h2></h2></div>
-      <div class="card" id="atrasados"><p>Atrasadas</p><h2>0</h2></div>
-
-      <div class="pomodoro">
-  <h3 id="mode">FOCO</h3>
-
-  <div id="timer">25:00</div>
-
-  <div class="buttons">
-    <button onclick="startTimer()">Iniciar</button>
-    <button onclick="pauseTimer()">Pausar</button>
-    <button onclick="resetTimer()">Resetar</button>
+    <div class="title">Dashboard</div>
   </div>
 
-  <p>Ciclos: <span id="cycles">0</span></p>
-</div>
+  <div class="cards">
+    <div class="card" id="total"><p>Total</p><h2>0</h2></div>
+    <div class="card" id="concluidas"><p>Concluídas</p><h2>0</h2></div>
+    <div class="card" id="emprogresso"><p>Em progresso</p><h2>0</h2></div>
+    <div class="card" id="atrasados"><p>Atrasadas</p><h2>0</h2></div>
+
+    <div class="pomodoro">
+      <h3 id="mode">FOCO</h3>
+
+      <div id="timer">25:00</div>
+
+      <div class="buttons">
+        <button onclick="startTimer()">Iniciar</button>
+        <button onclick="pauseTimer()">Pausar</button>
+        <button onclick="resetTimer()">Resetar</button>
+      </div>
+
+      <p>Ciclos: <span id="cycles">0</span></p>
     </div>
-  
-    <div class="task-list">
+  </div>
+
+  <div class="task-list">
     <div class="tf">Tarefas Recentes</div>
-        <div class="task">
-          <span class="badge ${t.estado}"></span>
-        </div>
-    </div>
+    <div id="recentTasks"></div>
+  </div>
 </div>
 
+<script src="../../js/apiClient.js"></script>
 <script src="../../js/loadProfile.js"></script>
 <script src="../../js/dashboard.js"></script>
 </body>

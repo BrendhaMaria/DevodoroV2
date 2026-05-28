@@ -1,26 +1,42 @@
 <?php
-include '../php/conexao.php';
-session_start();
+header("Content-Type: application/json; charset=utf-8");
 
-header("Content-Type: application/json");
+require_once "../php/auth.php";
+require_once "../php/conexao.php";
 
-$id_empresa = $_SESSION['id_empresa'] ?? null;
-$tipo = $_SESSION['tipo'] ?? null;
+apiRequireMethod("GET");
 
-if (!$id_empresa || $tipo !== "empresa") {
-    echo json_encode(["error" => "não autorizado"]);
-    exit;
-}
+$auth = requireEmpresa();
+$idEmpresa = $auth["id_empresa"];
 
 $stmt = $conn->prepare("
     SELECT nome, email, codigo_acesso
     FROM empresa
     WHERE id_empresa = ?
+    LIMIT 1
 ");
 
-$stmt->bind_param("i", $id_empresa);
-$stmt->execute();
+if (!$stmt) {
+    apiError("Erro ao preparar consulta.", 500);
+}
 
-$result = $stmt->get_result();
+$stmt->bind_param("i", $idEmpresa);
 
-echo json_encode($result->fetch_assoc());
+if (!$stmt->execute()) {
+    apiError("Erro ao buscar empresa.", 500);
+}
+
+$empresa = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$empresa) {
+    apiError("Empresa nao encontrada.", 404);
+}
+
+apiResponse([
+    "success" => true,
+    "nome" => $empresa["nome"],
+    "email" => $empresa["email"],
+    "codigo_acesso" => $empresa["codigo_acesso"]
+]);
+?>
