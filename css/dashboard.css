@@ -10,6 +10,7 @@
 
 body {
   display: flex;
+  min-height:100vh;
   background: var(--bg);
   color: var(--text);
 }
@@ -18,7 +19,7 @@ body {
 /* SIDEBAR */
 .sidebar {
   width: 240px;
-  height: 100vh;
+  min-height: 100vh;
   background: var(--sidebar);
   display: flex;
   flex-direction: column;
@@ -83,6 +84,16 @@ body {
   object-fit: cover;
   display: block;
   margin-bottom: 10px;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.flex-fill {
+  flex: 1;
 }
 
 /* MAIN */
@@ -310,7 +321,9 @@ option{
 }
 
 .setting-group{
-display: flex;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .setting-item input {

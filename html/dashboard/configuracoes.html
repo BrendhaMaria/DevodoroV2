@@ -7,16 +7,21 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Configuracoes</title>
+
   <script>
     if (localStorage.getItem("theme") === "dark") {
       document.documentElement.classList.add("dark");
     }
   </script>
+
   <link rel="stylesheet" href="../../css/dashboard.css">
   <script src="../../js/authGuard.js"></script>
+
 </head>
 <body>
+
   <div class="sidebar">
+
     <div>
       <div class="logo">DEVODORO</div>
 
@@ -40,6 +45,7 @@
         <button class="logout-btn" type="submit">Sair</button>
       </form>
     </div>
+
   </div>
 
   <div class="main" id="app">
@@ -49,92 +55,119 @@
 
     <!--Alterações de Brendha-->
     <div class="card">
-    <h2>Aparência</h2>
-    <div class="modoescuro">
-      <span>Modo escuro/Claro</span> <br><br>
-      <button id="escuro">Alternar</button>
-      <br><br>
 
-<div class="settings">
-
-  <h2>Conta e Perfil</h2>
-
-  <div class="setting-group">
-
+      <h2>Aparência</h2>
+      <div class="modoescuro">
+        <span>Modo escuro/Claro</span> <br><br>
+        <button id="escuro">Alternar</button>
+        <br><br>
+      </div>
     
+      <div class="settings">
 
-    <div class="setting-item">
+        <h2>Conta e Perfil</h2>
 
-      <label>Avatar</label>
+        <div class="setting-group">
+          
+          <div class="avatar-section">
 
-      <img
-        id="previewAvatar"
-        src="../../uploads/perfis/default.png"
-        width="100"
-        height="100"
-        style="
-          border-radius:50%;
-          object-fit:cover;
-          display:block;
-          margin-bottom:10px;
-        "
-      >
+            <img
+              id="previewAvatar"
+              class="avatar-preview"
+              src="../../uploads/perfis/default.png"
+              width="100"
+              height="100"
+              alt="Avatar do perfil"
+              title="Avatar do perfil"
+            >
 
-     
-<input 
-  type="file" 
-  id="avatarInput" 
-  accept=".png,.jpg,.jpeg"
-  hidden
->
+            <!-- Botão -->
+            <label for="avatarInput" class="upload-btn">
+              Upload de imagem
+            </label>
 
-<!-- Botão -->
-<label for="avatarInput" class="upload-btn">
-  Upload de imagem
-</label>
+            <input 
+              type="file" 
+              id="avatarInput" 
+              accept=".png,.jpg,.jpeg"
+              hidden
+            >
+          
+          </div>
+
+          <div class="setting-item">
+
+            <label for="avatarInput">Avatar</label>
+            <label for="nameInput">Nome</label>
+
+            <input
+              type="text"
+              id="nameInput"
+              placeholder="Digite seu nome"
+              title="Nome do usuário">
+
+          </div>
+
+          <div class="setting-item">
+
+            <label for="emailInput">Email</label>
+
+            <input
+              type="email"
+              id="emailInput"
+              placeholder="Digite seu email"
+              title="Endereço de email">
+
+          </div>
+
+        </div>
+
+        <br>
+
+        <button class="btn" id="saveProfile">
+          Salvar
+        </button>
+
+      </div>
+
+      <div class="card card--spaced" id="empresaCodigoCard">
+        <h2>Código da Empresa</h2>
+
+        <p>
+          Este código é usado pelos funcionários para se cadastrarem na sua empresa.
+        </p>
+
+        <div class="input-row">
+
+          <input 
+            type="password"
+            id="codigoEmpresa"
+            readonly
+            class="flex-fill"
+            placeholder="Código da empresa"
+            title="Código da empresa"
+          >
+
+          <button
+            class="btn"
+            id="mostrarCodigoBtn"
+            type="button">
+            Mostrar Código
+          </button>
+
+          <button
+            class="btn"
+            id="copiarCodigoBtn"
+            type="button">
+            Copiar
+          </button>
+
+        </div>
+      </div>
 
     </div>
 
-<br>
-
-<button class="btn" id="saveProfile">
-  Salvar
-</button>
-
   </div>
-
-<div class="card" style="margin-top:20px;">
-  <h2>Código da Empresa</h2>
-
-  <p>
-    Este código é usado pelos funcionários para se cadastrarem na sua empresa.
-  </p>
-
-  <div style="display:flex; gap:10px; align-items:center;">
-
-    <input 
-      type="password"
-      id="codigoEmpresa"
-      readonly
-      style="flex:1;"
-    >
-
-    <button 
-      class="btn"
-      id="mostrarCodigoBtn"
-      onclick="mostrarCodigo()"
-    >
-      Mostrar Código
-    </button>
-
-    <button class="btn" onclick="copiarCodigo()">
-      Copiar
-    </button>
-
-  </div>
-</div>
-
-</div>
 
   <script src="../../js/apiClient.js"></script>
   <script src="../../js/loadProfile.js"></script>
